@@ -1,0 +1,126 @@
+/* ========================================================
+   App.css - メインレイアウトとランディング画面のスタイル
+   ======================================================== */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg,
+      var(--color-primary-50) 0%,
+      var(--color-neutral-0) 40%,
+      var(--color-secondary-50) 100%);
+}
+
+/* ----- Header ----- */
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-8);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-neutral-200);
+  height: var(--header-height);
+}
+
+.app-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-700);
+  letter-spacing: 0.02em;
+}
+
+.app-subtitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-500);
+}
+
+/* ----- Main Content ----- */
+.app-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+/* ----- Welcome Card ----- */
+.welcome-card {
+  text-align: center;
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-16) var(--space-12);
+  box-shadow: var(--shadow-xl);
+  max-width: 480px;
+  width: 100%;
+  animation: fadeInUp var(--transition-slow) both;
+}
+
+.welcome-icon {
+  font-size: 3.5rem;
+  margin-bottom: var(--space-6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.welcome-heading {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+  margin-bottom: var(--space-4);
+}
+
+.welcome-text {
+  font-size: var(--font-size-md);
+  color: var(--color-neutral-600);
+  line-height: var(--line-height-loose);
+  margin-bottom: var(--space-10);
+}
+
+/* ----- Button System ----- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-normal);
+  letter-spacing: 0.02em;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  color: var(--color-neutral-0);
+  box-shadow: 0 4px 14px rgba(33, 150, 243, 0.35);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-500) 100%);
+  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.30);
+}
+
+/* ----- Responsive (Tablet & Mobile) ----- */
+@media (max-width: 768px) {
+  .app-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .welcome-card {
+    padding: var(--space-10) var(--space-6);
+    border-radius: var(--radius-xl);
+  }
+
+  .app-main {
+    padding: var(--space-4);
+  }
+}
