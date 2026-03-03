@@ -1,0 +1,104 @@
+.choice-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+}
+
+.choice-grid {
+    display: flex;
+    gap: var(--space-3);
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.choice-btn {
+    flex: 1 1 180px;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    border: 2px solid var(--color-neutral-300);
+    background: var(--color-neutral-0);
+    color: var(--color-neutral-800);
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    text-align: center;
+    min-height: 56px;
+}
+
+.choice-btn:hover {
+    border-color: var(--color-primary-300);
+    background: var(--color-primary-50);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* 選択肢ごとの左ボーダーカラー */
+.choice-a {
+    border-left: 4px solid #e53935;
+}
+
+.choice-b {
+    border-left: 4px solid #ffa726;
+}
+
+.choice-c {
+    border-left: 4px solid #2196f3;
+}
+
+/* 選択済み状態 */
+.choice-selected {
+    border-color: var(--color-primary-500) !important;
+    background: var(--color-primary-50);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+    transform: translateY(-2px);
+}
+
+.choice-selected.choice-a {
+    background: #fce4ec;
+    border-color: #e53935 !important;
+    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2);
+}
+
+.choice-selected.choice-b {
+    background: #fff3e0;
+    border-color: #ffa726 !important;
+    box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.2);
+}
+
+.choice-selected.choice-c {
+    background: #e3f2fd;
+    border-color: #2196f3 !important;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+/* 確定ボタン */
+.btn-confirm {
+    padding: var(--space-3) var(--space-8);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    background: linear-gradient(135deg, var(--color-secondary-500) 0%, var(--color-secondary-600) 100%);
+    color: var(--color-neutral-0);
+    box-shadow: 0 4px 14px rgba(0, 178, 95, 0.35);
+    transition: all var(--transition-normal);
+}
+
+.btn-confirm:hover {
+    background: linear-gradient(135deg, var(--color-secondary-400) 0%, var(--color-secondary-500) 100%);
+    box-shadow: 0 6px 20px rgba(0, 178, 95, 0.45);
+    transform: translateY(-2px);
+}
+
+/* レスポンシブ（タブレット・スマホ）*/
+@media (max-width: 768px) {
+    .choice-grid {
+        flex-direction: column;
+    }
+
+    .choice-btn {
+        flex: 1 1 auto;
+    }
+}

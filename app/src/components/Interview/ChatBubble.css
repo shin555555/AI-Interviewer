@@ -1,0 +1,74 @@
+.bubble-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    max-width: var(--chat-max-width);
+    width: 100%;
+}
+
+.bubble-row-system {
+    align-self: flex-start;
+    animation: slideInLeft var(--transition-slow) both;
+}
+
+.bubble-row-user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+    animation: slideInRight var(--transition-slow) both;
+}
+
+/* アバター */
+.bubble-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--color-neutral-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.bubble-avatar-user {
+    background: var(--color-primary-100);
+}
+
+/* 吹き出し */
+.bubble {
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-xl);
+    line-height: var(--line-height-loose);
+    font-size: var(--font-size-base);
+    max-width: 70%;
+    word-break: break-word;
+}
+
+.bubble-system {
+    background: var(--color-bubble-system);
+    color: var(--color-neutral-800);
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.bubble-user {
+    background: var(--color-bubble-user);
+    color: var(--color-bubble-user-text);
+    border-bottom-right-radius: var(--radius-sm);
+}
+
+.bubble-code {
+    background: linear-gradient(135deg, var(--color-primary-50), var(--color-secondary-50));
+    border: 2px solid var(--color-primary-200);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    text-align: center;
+    letter-spacing: 0.3em;
+    color: var(--color-primary-700);
+}
+
+.bubble-supplement {
+    background: var(--color-primary-400);
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
