@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useCallback, useState } from 'react'
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -11,7 +11,8 @@ import {
 import { Radar } from 'react-chartjs-2'
 import { calculateAttributeScores } from '../../utils/scoreCalculator'
 import { calculateJobMatches, getTopRecommendations } from '../../utils/jobMatcher'
-import { generateStrengthDescriptions, generateExecutiveSummary } from '../../utils/strengthDescriptions'
+import { generateStrengthDescriptions, generateExecutiveSummary, generateAccommodations, generateActionPlan } from '../../utils/strengthDescriptions'
+import { generatePDF } from '../../utils/pdfGenerator'
 import './ResultScreen.css'
 
 // Chart.js の登録
@@ -34,6 +35,8 @@ export default function ResultScreen({ answers }) {
         const recommendations = getTopRecommendations(jobMatches)
         const strengths = generateStrengthDescriptions(attrResult.scores)
         const summary = generateExecutiveSummary(attrResult.scores)
+        const accommodations = generateAccommodations(attrResult.scores)
+        const actionPlan = generateActionPlan(attrResult.scores, recommendations)
 
         return {
             ...attrResult,
@@ -41,6 +44,8 @@ export default function ResultScreen({ answers }) {
             recommendations,
             strengths,
             summary,
+            accommodations,
+            actionPlan,
         }
     }, [answers])
 
@@ -114,15 +119,40 @@ export default function ResultScreen({ answers }) {
     // 矛盾のある属性IDセット
     const contradictionIds = new Set(analysis.contradictions.map(c => c.attributeId))
 
+    // PDF生成
+    const pdfContentRef = useRef(null)
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+
+    const handleDownloadPDF = useCallback(async () => {
+        if (!pdfContentRef.current) return
+        setIsGeneratingPDF(true)
+        try {
+            await generatePDF(pdfContentRef.current, 'ワーク・プロファイル')
+        } catch (err) {
+            console.error('PDF生成に失敗しました:', err)
+            alert('PDF生成に失敗しました。もう一度お試しください。')
+        } finally {
+            setIsGeneratingPDF(false)
+        }
+    }, [])
+
     return (
         <div className="result-screen">
             {/* ヘッダー */}
             <header className="result-header">
                 <h1>あなたのプロフィール</h1>
                 <p>AIワーク・プロファイル 診断結果</p>
+                <button
+                    className="pdf-download-btn"
+                    onClick={handleDownloadPDF}
+                    disabled={isGeneratingPDF}
+                    id="pdf-download-btn"
+                >
+                    {isGeneratingPDF ? '⏳ 作成中...' : '📄 PDFをダウンロード'}
+                </button>
             </header>
 
-            <div className="result-content">
+            <div className="result-content" id="pdf-content" ref={pdfContentRef}>
                 {/* エグゼクティブ・サマリー */}
                 <div className="result-summary-card" id="executive-summary">
                     <div className="summary-icon">✨</div>
@@ -250,6 +280,38 @@ export default function ResultScreen({ answers }) {
                             <div className="metadata-label">場面による変動</div>
                         </div>
                     </div>
+                </div>
+
+                {/* 環境への処方箋 */}
+                {analysis.accommodations.length > 0 && (
+                    <>
+                        <h2 className="result-section-title">
+                            <span className="section-icon">💊</span>
+                            企業に伝えたい配慮のポイント
+                        </h2>
+                        <div className="accommodations-card" id="accommodations">
+                            <p className="accommodations-intro">
+                                あなたが安心して働くために、企業にお願いできることの例です。
+                            </p>
+                            <ul className="accommodations-list">
+                                {analysis.accommodations.map(item => (
+                                    <li key={item.attributeId} className="accommodation-item">
+                                        <span className="accommodation-attr">{item.name}</span>
+                                        <span className="accommodation-text">{item.suggestion}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </>
+                )}
+
+                {/* アクションプラン */}
+                <h2 className="result-section-title">
+                    <span className="section-icon">🚀</span>
+                    次のステップ
+                </h2>
+                <div className="action-plan-card" id="action-plan">
+                    <p className="action-plan-text">{analysis.actionPlan}</p>
                 </div>
             </div>
         </div>

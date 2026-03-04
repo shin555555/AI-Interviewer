@@ -138,3 +138,58 @@ export function generateExecutiveSummary(scores) {
 
     return `${line1}\n${line2}\n${line3}`
 }
+
+/**
+ * 環境への処方箋（合理的配慮の案）を生成する
+ * スコアの低い属性に対して、企業に伝えるべき配慮事項を提案する。
+ * 
+ * @param {Object} scores - calculateAttributeScores().scores
+ * @returns {Array} [{ attributeId, name, suggestion }]
+ */
+export function generateAccommodations(scores) {
+    const ACCOMMODATIONS = {
+        P1: '作業手順のチェックリストを用意し、確認する時間を設ける。',
+        P2: '長時間の作業は適度に休憩を挟み、短い単位で区切って進められるようにする。',
+        P3: '体調の変化を相談しやすい雰囲気づくりと、無理のない勤務時間の設定。',
+        P4: '操作のわかりやすいマニュアルを用意し、困った時にすぐ聞ける環境を整える。',
+        P5: '指示は口頭だけでなく書面でも渡し、報告のタイミングを具体的に決めておく。',
+        I1: '静かな作業スペースの確保と、集中が切れた時に戻れる声かけのサポート。',
+        I2: 'クールダウンできる場所を用意し、気持ちの波があっても安心できる環境をつくる。',
+        I3: '作業のルールや手順を明文化し、曖昧な指示を避ける。',
+        I4: '作業内容の変更は事前に伝え、急な変更をできるだけ減らす。',
+        I5: '意見を求める時は一対一で行い、書面やメモでも伝えられる手段を用意する。',
+    }
+
+    // スコアが低い（normalized < 3.0）属性に対して配慮事項を生成
+    return Object.entries(scores)
+        .filter(([, data]) => data.normalized < 3.0)
+        .sort((a, b) => a[1].normalized - b[1].normalized) // 低い順
+        .map(([id, data]) => ({
+            attributeId: id,
+            name: DESCRIPTIONS[id]?.name || id,
+            normalizedScore: data.normalized,
+            suggestion: ACCOMMODATIONS[id] || '',
+        }))
+}
+
+/**
+ * アクションプラン（支援員への相談を促すメッセージ）を生成する
+ * 
+ * @param {Object} scores - calculateAttributeScores().scores
+ * @param {Array} recommendations - getTopRecommendations() の結果
+ * @returns {string} アクションプランのテキスト
+ */
+export function generateActionPlan(scores, recommendations) {
+    const sorted = Object.entries(scores)
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => b.normalized - a.normalized)
+
+    const topStrength = DESCRIPTIONS[sorted[0].id]?.name || sorted[0].name
+    const topJob = recommendations?.bestMatches?.[0]?.job?.name || 'あなたにぴったりの仕事'
+
+    return [
+        `あなたの強みは「${topStrength}」です。この力を活かせる場所を、支援員の方と一緒に探してみましょう。`,
+        `今回のおすすめの1位は「${topJob}」でした。実際にどんな仕事なのか、支援員の方に聞いてみてください。`,
+        '結果について気になることがあれば、いつでも支援員の方に相談してください。あなたのペースで大丈夫です。',
+    ].join('\n')
+}
