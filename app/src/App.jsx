@@ -15,9 +15,22 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false)
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState(false)
+  const [showNameInput, setShowNameInput] = useState(false)
+  const [userName, setUserName] = useState('')
+  const [nameError, setNameError] = useState(false)
 
   const handleStartInterview = () => {
+    setShowNameInput(true)
+  }
+
+  const handleNameSubmit = () => {
+    if (userName.trim().length === 0) {
+      setNameError(true)
+      return
+    }
     setScreen('interview')
+    setShowNameInput(false)
+    setNameError(false)
   }
 
   const handleInterviewComplete = (answers) => {
@@ -39,7 +52,7 @@ function App() {
 
   // --- インタビュー画面 ---
   if (screen === 'interview') {
-    return <InterviewScreen onComplete={handleInterviewComplete} />
+    return <InterviewScreen onComplete={handleInterviewComplete} userName={userName.trim()} />
   }
 
   // --- 結果画面 ---
@@ -73,6 +86,48 @@ function App() {
           >
             インタビューをはじめる
           </button>
+
+          {showNameInput && (
+            <div className="admin-login-overlay" onClick={() => setShowNameInput(false)}>
+              <div className="admin-login-modal" onClick={(e) => e.stopPropagation()}>
+                <h3>📝 お名前の入力</h3>
+                <p>あなたの結果を正確に記録するために使います。<br />ニックネームや事業所から渡されたIDでも大丈夫です。</p>
+                <input
+                  type="text"
+                  className={`admin-password-input ${nameError ? 'is-error' : ''}`}
+                  value={userName}
+                  onChange={(e) => {
+                    setUserName(e.target.value)
+                    setNameError(false)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleNameSubmit()
+                  }}
+                  placeholder="お名前またはID"
+                  autoFocus
+                  style={{ letterSpacing: 'normal', textAlign: 'left' }}
+                />
+                {nameError && (
+                  <div className="admin-login-error">❗ お名前を入力してください</div>
+                )}
+                <div className="admin-login-actions">
+                  <button
+                    className="admin-login-cancel"
+                    onClick={() => {
+                      setShowNameInput(false)
+                      setUserName('')
+                      setNameError(false)
+                    }}
+                  >
+                    キャンセル
+                  </button>
+                  <button className="admin-login-submit" onClick={handleNameSubmit}>
+                    はじめる
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <button
             className="btn btn-admin"
             onClick={() => setShowAdminLogin(true)}

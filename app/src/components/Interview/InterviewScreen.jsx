@@ -13,7 +13,7 @@ const LS_KEY = 'wp_session'
  * PCファーストの対話型UIで30問を順番に出題し、
  * 選択肢ボタンと任意のテキスト入力で回答を受け付ける。
  */
-export default function InterviewScreen({ onComplete }) {
+export default function InterviewScreen({ onComplete, userName = '' }) {
     // --- State ---
     const [sessionCode, setSessionCode] = useState('')
     const [started, setStarted] = useState(false)
@@ -65,20 +65,24 @@ export default function InterviewScreen({ onComplete }) {
     // --- LocalStorage保存 ---
     useEffect(() => {
         if (sessionCode) {
-            const data = { sessionCode, started, currentIndex, messages, answers }
+            const data = { sessionCode, started, currentIndex, messages, answers, userName }
             localStorage.setItem(LS_KEY, JSON.stringify(data))
         }
-    }, [sessionCode, started, currentIndex, messages, answers])
+    }, [sessionCode, started, currentIndex, messages, answers, userName])
 
     // --- セッション開始（初回） ---
     const handleStart = useCallback(() => {
         const code = generateSessionCode()
         setSessionCode(code)
 
+        const greeting = userName
+            ? `${userName}さん、こんにちは。これからあなたのことを教えていただきたいです。`
+            : `こんにちは。これからあなたのことを教えていただきたいです。`
+
         const initMessages = [
             {
                 type: 'system',
-                text: `こんにちは。これからあなたのことを教えていただきたいです。\n\n途中で休む時のために、再開コードを発行しました。\nメモしておいてください。`,
+                text: `${greeting}\n\n途中で休む時のために、再開コードを発行しました。\nメモしておいてください。`,
             },
             {
                 type: 'system',
@@ -208,7 +212,7 @@ export default function InterviewScreen({ onComplete }) {
                 scrollToBottom()
                 // 完了コールバック
                 setTimeout(() => {
-                    if (onComplete) onComplete(newAnswers)
+                    if (onComplete) onComplete(newAnswers, userName)
                 }, 1500)
             }, 1000)
         } else {
