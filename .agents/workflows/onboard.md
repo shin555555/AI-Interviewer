@@ -11,6 +11,7 @@ description: ["プロジェクトの仕様と現在の進捗を読み込み、AI
 1. 以下のファイルを `view_file` ツールを用いて**必ずすべて読み込む**こと。
    - `c:\Users\user\Desktop\AI-Interviewer\CLAUDE.md` (開発基本ルール)
    - `c:\Users\user\Desktop\AI-Interviewer\要件定義書.md` (ビジネス要件とドメイン知識)
+   - `c:\Users\user\Desktop\AI-Interviewer\docs\開発進捗.md` (これまでの経緯と今後のロードマップ)
    - `c:\Users\user\Desktop\AI-Interviewer\docs\status.md` (現在の進捗とTODOリスト)
    - `c:\Users\user\Desktop\AI-Interviewer\docs\architecture\logic_spec.md` (アルゴリズムとロジック)
    - `c:\Users\user\Desktop\AI-Interviewer\docs\specs\ui_wireframe.md` (画面設計図)

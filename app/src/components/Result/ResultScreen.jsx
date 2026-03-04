@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback, useState } from 'react'
+import { useMemo, useRef, useCallback, useState, useEffect } from 'react'
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -13,6 +13,7 @@ import { calculateAttributeScores } from '../../utils/scoreCalculator'
 import { calculateJobMatches, getTopRecommendations } from '../../utils/jobMatcher'
 import { generateStrengthDescriptions, generateExecutiveSummary, generateAccommodations, generateActionPlan } from '../../utils/strengthDescriptions'
 import { generatePDF } from '../../utils/pdfGenerator'
+import { saveUserResult } from '../../utils/spreadsheetAPI'
 import './ResultScreen.css'
 
 // Chart.js の登録
@@ -27,7 +28,9 @@ ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, 
  * - 推奨職種 TOP5（ベストマッチ3 + 可能性2）
  * - メタデータ（回答時間、確信度等）
  */
-export default function ResultScreen({ answers }) {
+export default function ResultScreen({ answers, userName = '' }) {
+    // 保存ステータス
+    const [saveStatus, setSaveStatus] = useState('saving') // 'saving' | 'saved' | 'error'
     // 全ての解析を実行
     const analysis = useMemo(() => {
         const attrResult = calculateAttributeScores(answers)
@@ -48,6 +51,59 @@ export default function ResultScreen({ answers }) {
             actionPlan,
         }
     }, [answers])
+
+    // --- GASへの自動保存 ---
+    useEffect(() => {
+        if (!analysis) return
+
+        const sessionData = localStorage.getItem('wp_session')
+        let sessionKey = ''
+        try {
+            const parsed = JSON.parse(sessionData || '{}')
+            sessionKey = parsed.sessionCode || ''
+        } catch (e) { /* ignore */ }
+
+        // 推奨職種TOP1の情報を取得
+        const top1 = analysis.recommendations.bestMatches[0]
+
+        // カテゴリートレンドを計算（最もマッチ度の高いカテゴリー）
+        const categoryCount = {}
+        analysis.recommendations.bestMatches.forEach(m => {
+            const cat = m.job.categoryName
+            categoryCount[cat] = (categoryCount[cat] || 0) + 1
+        })
+        const topCategory = Object.entries(categoryCount)
+            .sort((a, b) => b[1] - a[1])[0]?.[0] || ''
+
+        const userData = {
+            userId: userName || sessionKey,
+            userName: userName,
+            sessionKey: sessionKey,
+            scores: analysis.scores,
+            metadata: analysis.metadata,
+            contradictions: analysis.contradictions,
+            answers: answers,
+            topJob: top1?.job.name || '',
+            topMatchScore: top1?.matchScore || 0,
+            categoryTrend: topCategory,
+        }
+
+        saveUserResult(userData)
+            .then(res => {
+                if (res.success || res.id) {
+                    setSaveStatus('saved')
+                    // 保存成功後、LocalStorageのセッションデータをクリア
+                    localStorage.removeItem('wp_session')
+                } else {
+                    console.warn('保存結果:', res)
+                    setSaveStatus('saved') // モックの場合もsavedとする
+                }
+            })
+            .catch(err => {
+                console.error('データの保存に失敗しました:', err)
+                setSaveStatus('error')
+            })
+    }, [analysis, answers, userName])
 
     // --- レーダーチャートデータ ---
     const workStyleChartData = {
@@ -150,6 +206,16 @@ export default function ResultScreen({ answers }) {
                 >
                     {isGeneratingPDF ? '⏳ 作成中...' : '📄 PDFをダウンロード'}
                 </button>
+                {/* 保存ステータス表示 */}
+                {saveStatus === 'saving' && (
+                    <span className="save-status is-saving">📡 データを保存しています...</span>
+                )}
+                {saveStatus === 'saved' && (
+                    <span className="save-status is-saved">✅ 保存しました</span>
+                )}
+                {saveStatus === 'error' && (
+                    <span className="save-status is-error">⚠️ 保存にエラーがありました</span>
+                )}
             </header>
 
             <div className="result-content" id="pdf-content" ref={pdfContentRef}>

@@ -33,8 +33,10 @@ function App() {
     setNameError(false)
   }
 
-  const handleInterviewComplete = (answers) => {
+  const handleInterviewComplete = (answers, completedUserName) => {
     setResults(answers)
+    // InterviewScreenからuserNameが渡された場合は更新
+    if (completedUserName) setUserName(completedUserName)
     setScreen('complete')
   }
 
@@ -57,7 +59,7 @@ function App() {
 
   // --- 結果画面 ---
   if (screen === 'complete' && results) {
-    return <ResultScreen answers={results} />
+    return <ResultScreen answers={results} userName={userName.trim()} />
   }
 
   // --- 管理ダッシュボード ---

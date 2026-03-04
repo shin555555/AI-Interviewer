@@ -375,6 +375,35 @@
     cursor: not-allowed;
 }
 
+/* --- 保存ステータス --- */
+.save-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-xs);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    position: relative;
+    z-index: 1;
+    margin-top: var(--space-3);
+    animation: fadeInUp 0.4s both;
+}
+
+.save-status.is-saving {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.save-status.is-saved {
+    color: #a5d6a7;
+    background: rgba(76, 175, 80, 0.15);
+}
+
+.save-status.is-error {
+    color: #ffab91;
+    background: rgba(244, 67, 54, 0.15);
+}
+
 /* --- 環境への処方箋 --- */
 .accommodations-card {
     background: var(--color-neutral-0);

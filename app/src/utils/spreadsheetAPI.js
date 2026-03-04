@@ -193,10 +193,13 @@ export async function saveUserResult(userData) {
         return { success: true, id: `user_${Date.now()}` }
     }
 
+    // GAS WebアプリではContent-Type: application/jsonだとCORSエラーになるため
+    // text/plain で送信する（GAS側ではe.postData.contentsで受け取れる）
     const res = await fetch(GAS_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'saveResult', data: userData }),
+        redirect: 'follow',
     })
     return await res.json()
 }
