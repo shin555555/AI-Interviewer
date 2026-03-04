@@ -14,6 +14,8 @@ import {
 } from 'chart.js'
 import { Radar, Doughnut, Bar, Line } from 'react-chartjs-2'
 import { fetchUsers, fetchUserDetail, calculateOverallStats } from '../../utils/spreadsheetAPI'
+import { calculateJobMatches, getTopRecommendations } from '../../utils/jobMatcher'
+import { generateStrengthDescriptions, generateExecutiveSummary, generateAccommodations, generateActionPlan } from '../../utils/strengthDescriptions'
 import './AdminDashboard.css'
 
 // Chart.js 登録
@@ -498,6 +500,9 @@ export default function AdminDashboard({ onBack }) {
                     </div>
                 </div>
 
+                {/* ========== レポート詳細エリア ========== */}
+                {renderReportDetail()}
+
                 {/* 自由記述 */}
                 {userDetail.freeTexts && userDetail.freeTexts.length > 0 && (
                     <div className="admin-free-texts">
@@ -507,6 +512,132 @@ export default function AdminDashboard({ onBack }) {
                         ))}
                     </div>
                 )}
+            </div>
+        )
+    }
+    // ============================================================
+    // レポート詳細エリア（ResultScreenと同等の情報を管理者向けに表示）
+    // ============================================================
+    function renderReportDetail() {
+        if (!userDetail?.scores) return null
+
+        // スコアから解析結果を再計算
+        const scores = userDetail.scores
+        const summary = generateExecutiveSummary(scores)
+        const strengths = generateStrengthDescriptions(scores)
+        const jobMatches = calculateJobMatches(scores)
+        const recommendations = getTopRecommendations(jobMatches)
+        const accommodations = generateAccommodations(scores)
+        const actionPlan = generateActionPlan(scores, recommendations)
+
+        return (
+            <div className="admin-report-detail">
+                <div className="admin-report-divider">
+                    <span>📄 レポート詳細</span>
+                </div>
+
+                {/* サマリー */}
+                <div className="admin-detail-card" style={{ marginBottom: 'var(--space-6)', borderLeft: '4px solid var(--color-primary-500)' }}>
+                    <h3>✨ エグゼクティブ・サマリー</h3>
+                    <p className="admin-summary-text">{summary}</p>
+                </div>
+
+                {/* 強みの解説テーブル */}
+                <div className="admin-detail-card" style={{ marginBottom: 'var(--space-6)' }}>
+                    <h3>💪 強みの解説</h3>
+                    <table className="admin-report-table">
+                        <thead>
+                            <tr>
+                                <th>属性</th>
+                                <th>スコア</th>
+                                <th>レベル</th>
+                                <th>解説（利用者に表示された内容）</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {strengths.map(s => (
+                                <tr key={s.attributeId} className={userDetail.contradictions?.includes(s.attributeId) ? 'is-flagged' : ''}>
+                                    <td className="report-attr-name">{s.name}</td>
+                                    <td className="report-score">
+                                        <span className={`report-score-badge level-${s.level === '高い' ? 'high' : s.level === '中くらい' ? 'mid' : 'low'}`}>
+                                            {s.normalizedScore}/5
+                                        </span>
+                                    </td>
+                                    <td className="report-level">{s.level}</td>
+                                    <td className="report-desc">{s.description}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* 適職 TOP5 */}
+                <div className="admin-detail-card" style={{ marginBottom: 'var(--space-6)' }}>
+                    <h3>🎯 推奨職種 TOP5</h3>
+                    <table className="admin-report-table">
+                        <thead>
+                            <tr>
+                                <th>順位</th>
+                                <th>職種名</th>
+                                <th>カテゴリー</th>
+                                <th>マッチ度</th>
+                                <th>分類</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {recommendations.bestMatches.map((match, i) => (
+                                <tr key={match.job.id} className="is-best-match">
+                                    <td className="report-rank rank-best">{i + 1}</td>
+                                    <td className="report-job-name">{match.job.name}</td>
+                                    <td>{match.job.categoryIcon} {match.job.categoryName}</td>
+                                    <td className="report-match-score">{match.matchScore}%</td>
+                                    <td><span className="tag tag-strength">ベストマッチ</span></td>
+                                </tr>
+                            ))}
+                            {recommendations.possibilities.map((match, i) => (
+                                <tr key={match.job.id}>
+                                    <td className="report-rank">{i + 4}</td>
+                                    <td className="report-job-name">{match.job.name}</td>
+                                    <td>{match.job.categoryIcon} {match.job.categoryName}</td>
+                                    <td className="report-match-score">{match.matchScore}%</td>
+                                    <td><span className="tag tag-confidence-mid">可能性</span></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* 環境への処方箋 */}
+                {accommodations.length > 0 && (
+                    <div className="admin-detail-card" style={{ marginBottom: 'var(--space-6)', borderLeft: '4px solid var(--color-accent-400)' }}>
+                        <h3>💊 環境への処方箋（合理的配慮の案）</h3>
+                        <p className="admin-accommodations-intro">低スコア属性に基づき、企業へ伝えるべき配慮事項の案です。</p>
+                        <table className="admin-report-table">
+                            <thead>
+                                <tr>
+                                    <th>属性</th>
+                                    <th>提案内容</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {accommodations.map(item => (
+                                    <tr key={item.attributeId}>
+                                        <td className="report-attr-name">{item.name}</td>
+                                        <td>{item.suggestion}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* アクションプラン（控えめ表示） */}
+                <div className="admin-action-plan-subtle">
+                    <details>
+                        <summary>🚀 利用者に表示されたアクションプラン</summary>
+                        <p className="admin-action-plan-text">{actionPlan}</p>
+                    </details>
+                </div>
             </div>
         )
     }

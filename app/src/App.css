@@ -139,3 +139,153 @@
     padding: var(--space-4);
   }
 }
+
+/* ----- 管理者ログインモーダル ----- */
+.admin-login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.admin-login-modal {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-login-modal h3 {
+  font-size: var(--font-size-xl);
+  color: var(--color-neutral-800);
+  margin-bottom: var(--space-2);
+  text-align: center;
+}
+
+.admin-login-modal p {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-500);
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.admin-password-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-lg);
+  border: 2px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: all var(--transition-fast);
+  text-align: center;
+  letter-spacing: 0.2em;
+}
+
+.admin-password-input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
+}
+
+.admin-password-input.is-error {
+  border-color: var(--color-accent-500);
+  background-color: var(--color-accent-50);
+}
+
+.admin-login-error {
+  color: var(--color-accent-600);
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-2);
+  text-align: center;
+  font-weight: var(--font-weight-semibold);
+  animation: shake 0.4s ease-in-out;
+}
+
+.admin-login-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.admin-login-actions button {
+  flex: 1;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-sm);
+}
+
+.admin-login-cancel {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  border: none;
+}
+
+.admin-login-cancel:hover {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800);
+}
+
+.admin-login-submit {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+}
+
+.admin-login-submit:hover {
+  background: var(--color-primary-700);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-5px);
+  }
+}

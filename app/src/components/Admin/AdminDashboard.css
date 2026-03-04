@@ -571,6 +571,197 @@
     color: var(--color-neutral-500);
 }
 
+/* --- レポート詳細エリア --- */
+.admin-report-detail {
+    margin-top: var(--space-6);
+}
+
+.admin-report-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-700);
+}
+
+.admin-report-divider::before,
+.admin-report-divider::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-primary-200), transparent);
+}
+
+.admin-report-divider::after {
+    background: linear-gradient(90deg, transparent, var(--color-primary-200));
+}
+
+.admin-summary-text {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-loose);
+    color: var(--color-neutral-700);
+    white-space: pre-line;
+}
+
+/* レポートテーブル共通 */
+.admin-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+}
+
+.admin-report-table thead {
+    background: var(--color-neutral-50);
+}
+
+.admin-report-table th {
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-600);
+    font-size: var(--font-size-xs);
+    border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.admin-report-table td {
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-neutral-700);
+    border-bottom: 1px solid var(--color-neutral-100);
+    vertical-align: middle;
+    line-height: var(--line-height-normal);
+}
+
+.admin-report-table tbody tr:hover {
+    background: var(--color-neutral-50);
+}
+
+.admin-report-table tbody tr.is-flagged {
+    background: var(--color-accent-50);
+}
+
+.admin-report-table tbody tr.is-best-match {
+    background: rgba(0, 178, 95, 0.04);
+}
+
+.report-attr-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-800);
+    white-space: nowrap;
+}
+
+.report-score {
+    text-align: center;
+}
+
+.report-score-badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+}
+
+.report-score-badge.level-high {
+    background: var(--color-secondary-50);
+    color: var(--color-secondary-700);
+}
+
+.report-score-badge.level-mid {
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
+}
+
+.report-score-badge.level-low {
+    background: var(--color-accent-50);
+    color: var(--color-accent-700);
+}
+
+.report-level {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+}
+
+.report-desc {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-600);
+    max-width: 400px;
+}
+
+.report-rank {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-neutral-500);
+    text-align: center;
+}
+
+.report-rank.rank-best {
+    color: var(--color-secondary-600);
+}
+
+.report-job-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-800);
+}
+
+.report-match-score {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-600);
+}
+
+.admin-accommodations-intro {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+    margin-bottom: var(--space-4);
+}
+
+/* アクションプラン（控えめ） */
+.admin-action-plan-subtle {
+    margin-top: var(--space-4);
+}
+
+.admin-action-plan-subtle details {
+    background: var(--color-neutral-0);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    box-shadow: var(--shadow-sm);
+    border: 1px dashed var(--color-neutral-200);
+}
+
+.admin-action-plan-subtle summary {
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-600);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.admin-action-plan-subtle summary::-webkit-details-marker {
+    display: none;
+}
+
+.admin-action-plan-subtle summary::before {
+    content: '▸';
+    transition: transform var(--transition-fast);
+}
+
+.admin-action-plan-subtle details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.admin-action-plan-text {
+    margin-top: var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);
+    line-height: var(--line-height-loose);
+    white-space: pre-line;
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--color-neutral-200);
+}
+
 /* --- レスポンシブ --- */
 @media (max-width: 1024px) {
     .admin-sidebar {

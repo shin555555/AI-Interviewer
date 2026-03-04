@@ -12,6 +12,9 @@ import './App.css'
 function App() {
   const [screen, setScreen] = useState('welcome')
   const [results, setResults] = useState(null)
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
 
   const handleStartInterview = () => {
     setScreen('interview')
@@ -20,6 +23,18 @@ function App() {
   const handleInterviewComplete = (answers) => {
     setResults(answers)
     setScreen('complete')
+  }
+
+  const handleAdminLogin = () => {
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin1234'
+    if (password === adminPassword) {
+      setScreen('admin')
+      setShowAdminLogin(false)
+      setPassword('')
+      setPasswordError(false)
+    } else {
+      setPasswordError(true)
+    }
   }
 
   // --- インタビュー画面 ---
@@ -60,11 +75,52 @@ function App() {
           </button>
           <button
             className="btn btn-admin"
-            onClick={() => setScreen('admin')}
+            onClick={() => setShowAdminLogin(true)}
             id="admin-btn"
           >
             🔒 管理者画面
           </button>
+
+          {showAdminLogin && (
+            <div className="admin-login-overlay" onClick={() => setShowAdminLogin(false)}>
+              <div className="admin-login-modal" onClick={(e) => e.stopPropagation()}>
+                <h3>🔒 管理者ログイン</h3>
+                <p>パスワードを入力してください。</p>
+                <input
+                  type="password"
+                  className={`admin-password-input ${passwordError ? 'is-error' : ''}`}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setPasswordError(false)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAdminLogin()
+                  }}
+                  placeholder="パスワード"
+                  autoFocus
+                />
+                {passwordError && (
+                  <div className="admin-login-error">🚫 パスワードが間違っています</div>
+                )}
+                <div className="admin-login-actions">
+                  <button
+                    className="admin-login-cancel"
+                    onClick={() => {
+                      setShowAdminLogin(false)
+                      setPassword('')
+                      setPasswordError(false)
+                    }}
+                  >
+                    キャンセル
+                  </button>
+                  <button className="admin-login-submit" onClick={handleAdminLogin}>
+                    ログイン
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
