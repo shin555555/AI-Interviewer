@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import InterviewScreen from './components/Interview/InterviewScreen'
 import ResultScreen from './components/Result/ResultScreen'
+import AdminDashboard from './components/Admin/AdminDashboard'
 import './App.css'
 
 /**
  * App - ルートコンポーネント
- * 画面の状態を管理し、インタビュー画面と結果画面を切り替える。
+ * 画面の状態を管理し、各画面を切り替える。
+ * 'welcome' | 'interview' | 'complete' | 'admin'
  */
 function App() {
-  const [screen, setScreen] = useState('welcome') // 'welcome' | 'interview' | 'complete'
+  const [screen, setScreen] = useState('welcome')
   const [results, setResults] = useState(null)
 
   const handleStartInterview = () => {
@@ -28,6 +30,11 @@ function App() {
   // --- 結果画面 ---
   if (screen === 'complete' && results) {
     return <ResultScreen answers={results} />
+  }
+
+  // --- 管理ダッシュボード ---
+  if (screen === 'admin') {
+    return <AdminDashboard onBack={() => setScreen('welcome')} />
   }
 
   // --- ウェルカム画面 ---
@@ -51,6 +58,13 @@ function App() {
           >
             インタビューをはじめる
           </button>
+          <button
+            className="btn btn-admin"
+            onClick={() => setScreen('admin')}
+            id="admin-btn"
+          >
+            🔒 管理者画面
+          </button>
         </div>
       </main>
     </div>
@@ -58,3 +72,4 @@ function App() {
 }
 
 export default App
+
