@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import InterviewScreen from './components/Interview/InterviewScreen'
+import ResultScreen from './components/Result/ResultScreen'
 import './App.css'
 
 /**
@@ -24,29 +25,9 @@ function App() {
     return <InterviewScreen onComplete={handleInterviewComplete} />
   }
 
-  // --- 完了画面（仮） ---
-  if (screen === 'complete') {
-    return (
-      <div className="app">
-        <header className="app-header">
-          <h1 className="app-title">AI ワーク・プロファイル</h1>
-          <p className="app-subtitle">自己理解サポーター</p>
-        </header>
-        <main className="app-main">
-          <div className="welcome-card">
-            <div className="welcome-icon">🎉</div>
-            <h2 className="welcome-heading">おつかれさまでした</h2>
-            <p className="welcome-text">
-              すべての質問に回答していただきました。<br />
-              結果の分析機能は次のステップで実装されます。
-            </p>
-            <p className="welcome-text" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-neutral-500)' }}>
-              回答データ: {results ? `${results.length}問分を記録済み` : ''}
-            </p>
-          </div>
-        </main>
-      </div>
-    )
+  // --- 結果画面 ---
+  if (screen === 'complete' && results) {
+    return <ResultScreen answers={results} />
   }
 
   // --- ウェルカム画面 ---
