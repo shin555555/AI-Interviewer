@@ -48,6 +48,14 @@
     border-left: 4px solid #2196f3;
 }
 
+.choice-d {
+    border-left: 4px solid #43a047;
+}
+
+.choice-e {
+    border-left: 4px solid #7e57c2;
+}
+
 /* 選択済み状態 */
 .choice-selected {
     border-color: var(--color-primary-500) !important;
@@ -72,6 +80,18 @@
     background: #e3f2fd;
     border-color: #2196f3 !important;
     box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+.choice-selected.choice-d {
+    background: #e8f5e9;
+    border-color: #43a047 !important;
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.2);
+}
+
+.choice-selected.choice-e {
+    background: #ede7f6;
+    border-color: #7e57c2 !important;
+    box-shadow: 0 0 0 3px rgba(126, 87, 194, 0.2);
 }
 
 /* 確定ボタン */

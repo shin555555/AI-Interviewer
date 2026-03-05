@@ -22,7 +22,7 @@ export default function ChoiceButtons({ choices, onSelect, onConfirm }) {
         }
     }
 
-    const colors = ['choice-a', 'choice-b', 'choice-c']
+    const colors = ['choice-a', 'choice-b', 'choice-c', 'choice-d', 'choice-e']
 
     return (
         <div className="choice-buttons">

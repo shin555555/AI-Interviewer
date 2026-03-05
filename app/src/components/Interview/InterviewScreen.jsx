@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { QUESTIONS, AI_RESPONSES, generateSessionCode } from '../../data/questions'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { selectRandomQuestions, AI_RESPONSES, generateSessionCode } from '../../data/questionPool'
 import ChatBubble from './ChatBubble'
 import ChoiceButtons from './ChoiceButtons'
 import './InterviewScreen.css'
@@ -14,6 +14,9 @@ const LS_KEY = 'wp_session'
  * 選択肢ボタンと任意のテキスト入力で回答を受け付ける。
  */
 export default function InterviewScreen({ onComplete, userName = '' }) {
+    // --- ランダム出題の30問を生成 ---
+    const QUESTIONS = useMemo(() => selectRandomQuestions(3), [])
+
     // --- State ---
     const [sessionCode, setSessionCode] = useState('')
     const [started, setStarted] = useState(false)

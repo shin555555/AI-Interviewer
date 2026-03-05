@@ -10,7 +10,7 @@
  * - 回答時間: <3s=直感的(本心)、>15s=熟考(迷い)
  */
 
-import { ATTRIBUTES } from '../data/questions'
+import { ATTRIBUTES } from '../data/questionPool'
 
 /**
  * 回答データから10属性のスコアを計算する
@@ -104,12 +104,12 @@ export function calculateAttributeScores(answers) {
 }
 
 /**
- * 3問合計（3〜9点）を 1〜5 の5段階に正規化する
- * 3→1, 4→1.33, 5→1.67, 6→3, 7→3.33, 8→3.67, 9→5
- * 均等分割: (raw - 3) / 6 * 4 + 1
+ * 3問合計（3〜15点）を 1〜5 の5段階に正規化する
+ * 3→1, 9→3, 15→5
+ * 均等分割: (raw - 3) / 12 * 4 + 1
  */
 function normalizeScore(raw) {
-    const normalized = ((raw - 3) / 6) * 4 + 1
+    const normalized = ((raw - 3) / 12) * 4 + 1
     return Math.round(normalized * 10) / 10
 }
 
