@@ -17,6 +17,45 @@ const GAS_API_URL = import.meta.env.VITE_GAS_API_URL || ''
  */
 const IS_MOCK = !GAS_API_URL
 
+/**
+ * タイムアウト付き fetch
+ * @param {string} url
+ * @param {Object} options
+ * @param {number} timeoutMs - タイムアウト（デフォルト 15秒）
+ */
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+        const res = await fetch(url, { ...options, signal: controller.signal })
+        clearTimeout(timer)
+        return res
+    } catch (err) {
+        clearTimeout(timer)
+        if (err.name === 'AbortError') {
+            throw new Error('通信がタイムアウトしました。ネットワークを確認してください。')
+        }
+        throw err
+    }
+}
+
+/**
+ * リトライ付き API 呼び出し
+ * @param {Function} apiCall - 実行する非同期関数
+ * @param {number} maxRetries - 最大リトライ回数
+ */
+async function withRetry(apiCall, maxRetries = 2) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await apiCall()
+        } catch (err) {
+            if (attempt === maxRetries) throw err
+            // 指数バックオフで待機 (1s, 2s)
+            await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+        }
+    }
+}
+
 // ============================================================
 // モックデータ（開発環境用）
 // ============================================================
@@ -140,9 +179,12 @@ const MOCK_USERS = [
 export async function fetchUsers() {
     if (IS_MOCK) return MOCK_USERS
 
-    const res = await fetch(`${GAS_API_URL}?action=getUsers`)
-    const data = await res.json()
-    return data.users || []
+    return withRetry(async () => {
+        const res = await fetchWithTimeout(`${GAS_API_URL}?action=getUsers`)
+        if (!res.ok) throw new Error(`サーバーエラー (${res.status})`)
+        const data = await res.json()
+        return data.users || []
+    })
 }
 
 /**
@@ -153,33 +195,15 @@ export async function fetchUsers() {
 export async function fetchUserDetail(userId) {
     if (IS_MOCK) {
         const user = MOCK_USERS.find(u => u.id === userId)
-        // モック：過去の診断結果を疑似生成
-        return {
-            ...user,
-            history: [
-                {
-                    date: '2026-01-15',
-                    scores: Object.fromEntries(
-                        Object.entries(user.scores).map(([k, v]) => [k, { ...v, normalized: Math.max(1, v.normalized - 0.5 - Math.random() * 0.5) }])
-                    ),
-                },
-                {
-                    date: '2026-02-01',
-                    scores: Object.fromEntries(
-                        Object.entries(user.scores).map(([k, v]) => [k, { ...v, normalized: Math.max(1, v.normalized - Math.random() * 0.3) }])
-                    ),
-                },
-                {
-                    date: user.createdAt.split('T')[0],
-                    scores: user.scores,
-                },
-            ],
-        }
+        return { ...user }
     }
 
-    const res = await fetch(`${GAS_API_URL}?action=getUserDetail&userId=${userId}`)
-    const data = await res.json()
-    return data.user || null
+    return withRetry(async () => {
+        const res = await fetchWithTimeout(`${GAS_API_URL}?action=getUserDetail&userId=${userId}`)
+        if (!res.ok) throw new Error(`サーバーエラー (${res.status})`)
+        const data = await res.json()
+        return data.user || null
+    })
 }
 
 /**
@@ -193,15 +217,18 @@ export async function saveUserResult(userData) {
         return { success: true, id: `user_${Date.now()}` }
     }
 
-    // GAS WebアプリではContent-Type: application/jsonだとCORSエラーになるため
-    // text/plain で送信する（GAS側ではe.postData.contentsで受け取れる）
-    const res = await fetch(GAS_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'saveResult', data: userData }),
-        redirect: 'follow',
+    return withRetry(async () => {
+        // GAS WebアプリではContent-Type: application/jsonだとCORSエラーになるため
+        // text/plain で送信する（GAS側ではe.postData.contentsで受け取れる）
+        const res = await fetchWithTimeout(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'saveResult', data: userData }),
+            redirect: 'follow',
+        }, 30000) // 保存はグラフ生成があるので長めの30秒
+        if (!res.ok) throw new Error(`保存エラー (${res.status})`)
+        return await res.json()
     })
-    return await res.json()
 }
 
 /**

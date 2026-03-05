@@ -105,7 +105,7 @@ export const QUESTIONS = [
         choices: [
             { label: 'すぐ気づく', score: 3 },
             { label: '言われてみれば', score: 2 },
-            { label: '倒れるまで気づかない', score: 1 },
+            { label: '気づかない', score: 1 },
         ],
     },
     {

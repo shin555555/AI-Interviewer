@@ -28,7 +28,7 @@ ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, 
  * - 推奨職種 TOP5（ベストマッチ3 + 可能性2）
  * - メタデータ（回答時間、確信度等）
  */
-export default function ResultScreen({ answers, userName = '' }) {
+export default function ResultScreen({ answers, userName = '', onBack }) {
     // 保存ステータス
     const [saveStatus, setSaveStatus] = useState('saving') // 'saving' | 'saved' | 'error'
     // 全ての解析を実行
@@ -53,8 +53,15 @@ export default function ResultScreen({ answers, userName = '' }) {
     }, [answers])
 
     // --- GASへの自動保存 ---
-    useEffect(() => {
+    const hasSaved = useRef(false)
+
+    const saveData = useCallback(async () => {
         if (!analysis) return
+        // 二重送信防止
+        if (hasSaved.current && saveStatus !== 'error') return
+        hasSaved.current = true
+
+        setSaveStatus('saving')
 
         const sessionData = localStorage.getItem('wp_session')
         let sessionKey = ''
@@ -88,22 +95,25 @@ export default function ResultScreen({ answers, userName = '' }) {
             categoryTrend: topCategory,
         }
 
-        saveUserResult(userData)
-            .then(res => {
-                if (res.success || res.id) {
-                    setSaveStatus('saved')
-                    // 保存成功後、LocalStorageのセッションデータをクリア
-                    localStorage.removeItem('wp_session')
-                } else {
-                    console.warn('保存結果:', res)
-                    setSaveStatus('saved') // モックの場合もsavedとする
-                }
-            })
-            .catch(err => {
-                console.error('データの保存に失敗しました:', err)
-                setSaveStatus('error')
-            })
-    }, [analysis, answers, userName])
+        try {
+            const res = await saveUserResult(userData)
+            if (res.success || res.id) {
+                setSaveStatus('saved')
+                localStorage.removeItem('wp_session')
+            } else {
+                console.warn('保存結果:', res)
+                setSaveStatus('saved')
+            }
+        } catch (err) {
+            console.error('データの保存に失敗しました:', err)
+            hasSaved.current = false  // エラー時はリトライ可能にする
+            setSaveStatus('error')
+        }
+    }, [analysis, answers, userName, saveStatus])
+
+    useEffect(() => {
+        saveData()
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // --- レーダーチャートデータ ---
     const workStyleChartData = {
@@ -214,7 +224,12 @@ export default function ResultScreen({ answers, userName = '' }) {
                     <span className="save-status is-saved">✅ 保存しました</span>
                 )}
                 {saveStatus === 'error' && (
-                    <span className="save-status is-error">⚠️ 保存にエラーがありました</span>
+                    <div className="save-status is-error">
+                        <span>⚠️ データの保存に失敗しました</span>
+                        <button className="retry-btn" onClick={saveData} id="retry-save-btn">
+                            🔄 もう一度保存する
+                        </button>
+                    </div>
                 )}
             </header>
 
@@ -378,6 +393,19 @@ export default function ResultScreen({ answers, userName = '' }) {
                 </h2>
                 <div className="action-plan-card" id="action-plan">
                     <p className="action-plan-text">{analysis.actionPlan}</p>
+                </div>
+
+                {/* 終了ボタン */}
+                <div className="result-end-actions" id="result-end-actions">
+                    {onBack && (
+                        <button
+                            className="btn-end-back"
+                            onClick={onBack}
+                            id="end-back-btn"
+                        >
+                            🏠 トップに戻る
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

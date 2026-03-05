@@ -246,6 +246,40 @@
     color: var(--color-neutral-400);
 }
 
+/* 記述のみスキップボタン */
+.btn-skip-with-text {
+    flex-shrink: 0;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-secondary-500);
+    color: var(--color-neutral-0);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    animation: fadeIn 0.2s both;
+    white-space: nowrap;
+}
+
+.btn-skip-with-text:hover {
+    background: var(--color-secondary-600);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 178, 95, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 /* ----- レスポンシブ（タブレット・スマホ） ----- */
 @media (max-width: 768px) {
     .interview-header {

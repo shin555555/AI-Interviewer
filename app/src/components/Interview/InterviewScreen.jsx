@@ -170,7 +170,7 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
     const handleChoiceConfirm = useCallback((choiceIndex) => {
         const q = QUESTIONS[currentIndex]
         const choice = q.choices[choiceIndex]
-        const responseTimeMs = Date.now() - questionShownAt.current
+        const responseTimeMs = questionShownAt.current ? (Date.now() - questionShownAt.current) : 0
 
         // 回答データを記録
         const answerData = {
@@ -239,7 +239,69 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                 }, 600)
             }, 800)
         }
-    }, [currentIndex, answers, supplementText, scrollToBottom, onComplete])
+    }, [currentIndex, answers, supplementText, scrollToBottom, onComplete, userName])
+
+    // --- 自由記述のみでスキップ（3択を回答せずに次へ） ---
+    const handleSkipWithText = useCallback(() => {
+        const q = QUESTIONS[currentIndex]
+        const responseTimeMs = questionShownAt.current ? (Date.now() - questionShownAt.current) : 0
+
+        const answerData = {
+            questionId: q.id,
+            attributeId: q.attributeId,
+            choiceIndex: -1,
+            score: 2,  // 中間値をデフォルトに
+            responseTimeMs,
+            toggleCount: 0,
+            freeText: supplementText.trim(),
+        }
+
+        const newAnswers = [...answers, answerData]
+        setAnswers(newAnswers)
+
+        setMessages(prev => [...prev, { type: 'user', text: supplementText.trim(), isSupplement: true }])
+        setWaitingForChoice(false)
+        setSupplementText('')
+        scrollToBottom()
+
+        const nextIndex = currentIndex + 1
+        if (nextIndex >= QUESTIONS.length) {
+            setIsTyping(true)
+            setTimeout(() => {
+                setIsTyping(false)
+                setMessages(prev => [
+                    ...prev,
+                    { type: 'system', text: 'すべての質問に答えていただき、ありがとうございました。\nあなたの結果をまとめています...' },
+                ])
+                setCurrentIndex(nextIndex)
+                scrollToBottom()
+                setTimeout(() => {
+                    if (onComplete) onComplete(newAnswers, userName)
+                }, 1500)
+            }, 1000)
+        } else {
+            setIsTyping(true)
+            const aiResponse = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)]
+            setTimeout(() => {
+                setMessages(prev => [...prev, { type: 'system', text: aiResponse }])
+                scrollToBottom()
+                setTimeout(() => {
+                    setIsTyping(false)
+                    const nextQ = QUESTIONS[nextIndex]
+                    setMessages(prev => [
+                        ...prev,
+                        { type: 'system', text: nextQ.text, questionId: nextQ.id },
+                    ])
+                    setCurrentIndex(nextIndex)
+                    setWaitingForChoice(true)
+                    questionShownAt.current = Date.now()
+                    toggleCountRef.current = 0
+                    selectedChoiceRef.current = null
+                    scrollToBottom()
+                }, 600)
+            }, 800)
+        }
+    }, [currentIndex, answers, supplementText, scrollToBottom, onComplete, userName])
 
     // --- 中断ボタン ---
     const handlePause = useCallback(() => {
@@ -381,6 +443,15 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                                 onChange={(e) => setSupplementText(e.target.value)}
                                 id="supplement-input"
                             />
+                            {supplementText.trim() && (
+                                <button
+                                    className="btn btn-skip-with-text"
+                                    onClick={handleSkipWithText}
+                                    id="skip-with-text-btn"
+                                >
+                                    記述のみで次へ →
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

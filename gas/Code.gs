@@ -196,6 +196,13 @@ function handleSaveResult(userData) {
   // ユーザーIDを返す
   const id = userData.userId || userData.userName || ('user_' + new Date().getTime());
 
+  // スプレッドシート上のダッシュボードグラフを更新
+  try {
+    updateDashboardCharts();
+  } catch (chartErr) {
+    Logger.log('グラフ更新エラー（保存自体は成功）: ' + chartErr.message);
+  }
+
   return { success: true, id: id };
 }
 
@@ -414,7 +421,7 @@ function formatUserSummary(row) {
     topStrength: topStrength,
     topWeakness: topWeakness,
     confidenceLevel: row.confidenceLevel || '',
-    totalTime: row.totalTimeMs ? formatTime(Number(row.totalTimeMs)) : '',
+    totalTime: safeTotalTime(row.totalTimeMs),
     freeTexts: row.freeTexts ? row.freeTexts.split(' | ').filter(t => t) : [],
     contradictions: row.contradictions ? row.contradictions.split(', ').filter(c => c) : [],
     topJob: row.topJob || '',
@@ -437,6 +444,29 @@ function extractScores(row) {
     scores[key] = { raw, normalized };
   });
   return scores;
+}
+
+/**
+ * 安全に回答時間をフォーマットする。
+ * Googleスプレッドシートが大きな数値を日付型に自動変換してしまう
+ * ケースがあるため、Date型のチェックと実用的な範囲の検証を行う。
+ */
+function safeTotalTime(val) {
+  if (!val && val !== 0) return '';
+
+  // スプレッドシートが日付型に変換してしまった場合
+  if (val instanceof Date) {
+    // 日付型になった = もう元のms値は失われている → 表示不可
+    return '';
+  }
+
+  var ms = Number(val);
+  if (isNaN(ms) || ms < 0) return '';
+
+  // 86400000ms = 24時間。それを超える値は異常とみなす
+  if (ms > 86400000) return '';
+
+  return formatTime(ms);
 }
 
 /**
@@ -664,5 +694,211 @@ function setupAll() {
   setupJobsMasterSheet();
   setupResponseSheet();
   setupSettingsSheet();
+  setupDashboardSheet();
   Logger.log('🎉 全シートの初期セットアップが完了しました！');
+}
+
+// ============================================================
+// ダッシュボードシート: スプレッドシート上のグラフ自動生成
+// ============================================================
+
+const SHEET_DASHBOARD = 'ダッシュボード';
+
+/**
+ * ダッシュボードシートを初期化する。
+ */
+function setupDashboardSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_DASHBOARD);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_DASHBOARD);
+  } else {
+    sheet.clear();
+    // 既存のグラフも削除
+    var charts = sheet.getCharts();
+    for (var i = 0; i < charts.length; i++) {
+      sheet.removeChart(charts[i]);
+    }
+  }
+
+  // タイトル行
+  sheet.getRange('A1').setValue('📊 事業所ダッシュボード（自動更新）');
+  sheet.getRange('A1').setFontSize(14).setFontWeight('bold');
+  sheet.getRange('A2').setValue('※ このシートは自動で更新されます。手動で編集しないでください。');
+  sheet.getRange('A2').setFontColor('#999999');
+
+  Logger.log('✅ ダッシュボードシートを初期化しました');
+}
+
+/**
+ * 回答データを集計し、ダッシュボードシートに表とグラフを自動描画する。
+ * handleSaveResultから自動呼び出される。
+ */
+function updateDashboardCharts() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // 回答データを取得
+  var respSheet = ss.getSheetByName(SHEET_RESPONSES);
+  if (!respSheet || respSheet.getLastRow() <= 1) return;
+
+  var data = respSheet.getDataRange().getValues();
+  var headers = data[0];
+
+  // ヘッダーから列インデックスを取得
+  var colMap = {};
+  for (var h = 0; h < headers.length; h++) {
+    colMap[headers[h]] = h;
+  }
+
+  // 全利用者の正規化スコアを集計
+  var attrKeys = ['P1', 'P2', 'P3', 'P4', 'P5', 'I1', 'I2', 'I3', 'I4', 'I5'];
+  var attrNames = {'P1':'正確性','P2':'持続力','P3':'体力管理','P4':'IT道具','P5':'報連相','I1':'集中力','I2':'感情制御','I3':'規律性','I4':'柔軟性','I5':'自己発信'};
+  var sums = {};
+  var count = 0;
+  var categoryCount = {};
+
+  for (var k = 0; k < attrKeys.length; k++) {
+    sums[attrKeys[k]] = 0;
+  }
+
+  for (var i = 1; i < data.length; i++) {
+    count++;
+    for (var j = 0; j < attrKeys.length; j++) {
+      var normCol = colMap[attrKeys[j] + '_正規化'];
+      if (normCol !== undefined) {
+        sums[attrKeys[j]] += Number(data[i][normCol]) || 0;
+      }
+    }
+    // カテゴリー集計
+    var catCol = colMap['適合カテゴリー'];
+    if (catCol !== undefined) {
+      var cat = data[i][catCol] || '不明';
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+    }
+  }
+
+  if (count === 0) return;
+
+  // --- ダッシュボードシートを更新 ---
+  var dashSheet = ss.getSheetByName(SHEET_DASHBOARD);
+  if (!dashSheet) {
+    dashSheet = ss.insertSheet(SHEET_DASHBOARD);
+  }
+
+  // 既存のグラフを削除
+  var oldCharts = dashSheet.getCharts();
+  for (var c = 0; c < oldCharts.length; c++) {
+    dashSheet.removeChart(oldCharts[c]);
+  }
+
+  // データクリア（タイトル行だけ残す）
+  if (dashSheet.getLastRow() > 2) {
+    dashSheet.getRange(3, 1, dashSheet.getLastRow() - 2, dashSheet.getLastColumn() || 1).clear();
+  }
+  dashSheet.getRange('A1').setValue('📊 事業所ダッシュボード（自動更新）');
+  dashSheet.getRange('A1').setFontSize(14).setFontWeight('bold');
+  dashSheet.getRange('A2').setValue('最終更新: ' + new Date().toLocaleString('ja-JP') + ' ｜ 診断完了人数: ' + count + '人');
+  dashSheet.getRange('A2').setFontColor('#666666');
+
+  // --- 1. 特性分布テーブル (A4から) ---
+  dashSheet.getRange('A4').setValue('◆ 利用者全体の平均スコア');
+  dashSheet.getRange('A4').setFontWeight('bold').setFontSize(11);
+  dashSheet.getRange('A5').setValue('属性');
+  dashSheet.getRange('B5').setValue('平均スコア');
+  dashSheet.getRange('A5:B5').setBackground('#4A90D9').setFontColor('#FFFFFF').setFontWeight('bold');
+
+  for (var m = 0; m < attrKeys.length; m++) {
+    var avg = Math.round((sums[attrKeys[m]] / count) * 10) / 10;
+    dashSheet.getRange(6 + m, 1).setValue(attrNames[attrKeys[m]]);
+    dashSheet.getRange(6 + m, 2).setValue(avg);
+  }
+
+  // 特性分布棒グラフ
+  var barChart = dashSheet.newChart()
+    .setChartType(Charts.ChartType.BAR)
+    .addRange(dashSheet.getRange('A5:B15'))
+    .setPosition(4, 4, 0, 0)
+    .setOption('title', '事業所全体の特性分布（平均スコア）')
+    .setOption('hAxis.minValue', 0)
+    .setOption('hAxis.maxValue', 5)
+    .setOption('legend.position', 'none')
+    .setOption('colors', ['#4A90D9'])
+    .setOption('width', 500)
+    .setOption('height', 350)
+    .build();
+  dashSheet.insertChart(barChart);
+
+  // --- 2. カテゴリー分布テーブル (A18から) ---
+  dashSheet.getRange('A18').setValue('◆ 適合職種カテゴリー分布');
+  dashSheet.getRange('A18').setFontWeight('bold').setFontSize(11);
+  dashSheet.getRange('A19').setValue('カテゴリー');
+  dashSheet.getRange('B19').setValue('人数');
+  dashSheet.getRange('A19:B19').setBackground('#2E7D32').setFontColor('#FFFFFF').setFontWeight('bold');
+
+  var catEntries = Object.keys(categoryCount);
+  for (var p = 0; p < catEntries.length; p++) {
+    dashSheet.getRange(20 + p, 1).setValue(catEntries[p]);
+    dashSheet.getRange(20 + p, 2).setValue(categoryCount[catEntries[p]]);
+  }
+  var catEndRow = 20 + catEntries.length - 1;
+  if (catEndRow < 20) catEndRow = 20;
+
+  // カテゴリー分布円グラフ
+  var pieChart = dashSheet.newChart()
+    .setChartType(Charts.ChartType.PIE)
+    .addRange(dashSheet.getRange('A19:B' + (catEndRow + 1)))
+    .setPosition(18, 4, 0, 0)
+    .setOption('title', '適合職種カテゴリー分布')
+    .setOption('pieHole', 0.4)
+    .setOption('width', 500)
+    .setOption('height', 350)
+    .build();
+  dashSheet.insertChart(pieChart);
+
+  // --- 3. 低スコア項目TOP3テーブル (Aの下の方) ---
+  var lowStartRow = catEndRow + 4;
+  dashSheet.getRange(lowStartRow, 1).setValue('◆ 優先すべき訓練プログラム（低スコアTOP3）');
+  dashSheet.getRange(lowStartRow, 1).setFontWeight('bold').setFontSize(11);
+
+  var avgList = [];
+  for (var n = 0; n < attrKeys.length; n++) {
+    avgList.push({ name: attrNames[attrKeys[n]], avg: Math.round((sums[attrKeys[n]] / count) * 10) / 10 });
+  }
+  avgList.sort(function(a, b) { return a.avg - b.avg; });
+
+  dashSheet.getRange(lowStartRow + 1, 1).setValue('順位');
+  dashSheet.getRange(lowStartRow + 1, 2).setValue('属性');
+  dashSheet.getRange(lowStartRow + 1, 3).setValue('平均スコア');
+  dashSheet.getRange(lowStartRow + 1, 1, 1, 3).setBackground('#E65100').setFontColor('#FFFFFF').setFontWeight('bold');
+
+  for (var q = 0; q < 3 && q < avgList.length; q++) {
+    dashSheet.getRange(lowStartRow + 2 + q, 1).setValue(q + 1);
+    dashSheet.getRange(lowStartRow + 2 + q, 2).setValue(avgList[q].name);
+    dashSheet.getRange(lowStartRow + 2 + q, 3).setValue(avgList[q].avg);
+  }
+
+  // 列幅調整
+  dashSheet.setColumnWidth(1, 180);
+  dashSheet.setColumnWidth(2, 120);
+  dashSheet.setColumnWidth(3, 120);
+
+  Logger.log('✅ ダッシュボードグラフを更新しました（利用者数: ' + count + '）');
+}
+
+// ============================================================
+// スプレッドシートのカスタムメニュー
+// ============================================================
+
+/**
+ * スプレッドシートを開いた時に自動実行される。
+ * メニューバーに「管理者メニュー」を追加する。
+ */
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('🛠 管理者メニュー')
+    .addItem('📊 ダッシュボードを今すぐ更新', 'updateDashboardCharts')
+    .addSeparator()
+    .addItem('⚙️ 全シートの初期セットアップ', 'setupAll')
+    .addItem('📋 ダッシュボードシートの初期化', 'setupDashboardSheet')
+    .addToUi();
 }

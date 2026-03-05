@@ -12,7 +12,7 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js'
-import { Radar, Doughnut, Bar, Line } from 'react-chartjs-2'
+import { Radar, Doughnut, Bar } from 'react-chartjs-2'
 import { fetchUsers, fetchUserDetail, calculateOverallStats } from '../../utils/spreadsheetAPI'
 import { calculateJobMatches, getTopRecommendations } from '../../utils/jobMatcher'
 import { generateStrengthDescriptions, generateExecutiveSummary, generateAccommodations, generateActionPlan } from '../../utils/strengthDescriptions'
@@ -50,24 +50,30 @@ export default function AdminDashboard({ onBack }) {
     const [activeNav, setActiveNav] = useState('dashboard')
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState(null)
     const [selectedUserId, setSelectedUserId] = useState(null)
     const [userDetail, setUserDetail] = useState(null)
     const [detailLoading, setDetailLoading] = useState(false)
+    const [detailError, setDetailError] = useState(null)
 
     // 初期データ読み込み
-    useEffect(() => {
-        let cancelled = false
-        async function load() {
-            setLoading(true)
+    const loadUsers = useCallback(async () => {
+        setLoading(true)
+        setLoadError(null)
+        try {
             const data = await fetchUsers()
-            if (!cancelled) {
-                setUsers(data)
-                setLoading(false)
-            }
+            setUsers(data)
+        } catch (err) {
+            console.error('ユーザーデータの取得に失敗:', err)
+            setLoadError(err.message || 'データの読み込みに失敗しました')
+        } finally {
+            setLoading(false)
         }
-        load()
-        return () => { cancelled = true }
     }, [])
+
+    useEffect(() => {
+        loadUsers()
+    }, [loadUsers])
 
     // 全体統計
     const stats = useMemo(() => calculateOverallStats(users), [users])
@@ -77,9 +83,16 @@ export default function AdminDashboard({ onBack }) {
         setSelectedUserId(userId)
         setActiveNav('users')
         setDetailLoading(true)
-        const detail = await fetchUserDetail(userId)
-        setUserDetail(detail)
-        setDetailLoading(false)
+        setDetailError(null)
+        try {
+            const detail = await fetchUserDetail(userId)
+            setUserDetail(detail)
+        } catch (err) {
+            console.error('ユーザー詳細の取得に失敗:', err)
+            setDetailError(err.message || '詳細データの読み込みに失敗しました')
+        } finally {
+            setDetailLoading(false)
+        }
     }, [])
 
     const handleBackToList = useCallback(() => {
@@ -172,35 +185,18 @@ export default function AdminDashboard({ onBack }) {
     // ============================================================
     // 個別ユーザー用チャート
     // ============================================================
-    const buildTimeSeriesChart = (detail) => {
-        if (!detail?.history || detail.history.length === 0) return null
-
-        const datasets = ATTR_KEYS.slice(0, 5).map((key, i) => ({
-            label: ATTR_NAMES[key],
-            data: detail.history.map(h => h.scores[key]?.normalized || 0),
-            borderColor: `hsl(${i * 72}, 65%, 55%)`,
-            backgroundColor: 'transparent',
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-        }))
-
-        return {
-            labels: detail.history.map(h => h.date),
-            datasets,
+    // 回答時間を安全にフォーマットするヘルパー
+    const formatTotalTime = (user) => {
+        // totalTimeが既にフォーマット済み文字列の場合、異常値でないかチェック
+        if (user.totalTime) {
+            const match = user.totalTime.match(/(\d+)分/)
+            if (match && parseInt(match[1]) > 1440) {
+                // 1440分(24時間)超えは明らかに異常 → metadata.totalTimeMsから再計算
+                return null
+            }
+            return user.totalTime
         }
-    }
-
-    const lineOptions = {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-            y: { min: 0, max: 5, ticks: { stepSize: 1 } },
-            x: { ticks: { font: { size: 10 } } },
-        },
-        plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } },
-        },
+        return null
     }
 
     // ============================================================
@@ -211,6 +207,24 @@ export default function AdminDashboard({ onBack }) {
         return (
             <div className="admin-dashboard">
                 <div className="admin-loading">📡 データを読み込んでいます...</div>
+            </div>
+        )
+    }
+
+    if (loadError) {
+        return (
+            <div className="admin-dashboard">
+                <div className="admin-error">
+                    <div className="admin-error-icon">⚠️</div>
+                    <p>データの読み込みに失敗しました</p>
+                    <p className="admin-error-detail">{loadError}</p>
+                    <button className="admin-retry-btn" onClick={loadUsers}>
+                        🔄 もう一度読み込む
+                    </button>
+                    <button className="admin-logout-btn" onClick={onBack} style={{ marginTop: '12px' }}>
+                        ← トップに戻る
+                    </button>
+                </div>
             </div>
         )
     }
@@ -259,7 +273,7 @@ export default function AdminDashboard({ onBack }) {
     // ダッシュボード画面
     // ============================================================
     function renderDashboard() {
-        const alertCount = users.filter(u => u.contradictions && u.contradictions.length > 0).length
+        // 要注意アラートは削除済みのため不要
 
         return (
             <>
@@ -284,13 +298,6 @@ export default function AdminDashboard({ onBack }) {
                         <div>
                             <div className="admin-stat-value">{stats.completedUsers}人</div>
                             <div className="admin-stat-label">診断完了</div>
-                        </div>
-                    </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon is-warning">⚡</div>
-                        <div>
-                            <div className="admin-stat-value">{alertCount}人</div>
-                            <div className="admin-stat-label">要注意アラート</div>
                         </div>
                     </div>
                     <div className="admin-stat-card">
@@ -423,7 +430,27 @@ export default function AdminDashboard({ onBack }) {
     // 個別詳細画面
     // ============================================================
     function renderUserDetail() {
-        if (detailLoading || !userDetail) {
+        if (detailLoading) {
+            return <div className="admin-loading">📡 データを読み込んでいます...</div>
+        }
+
+        if (detailError) {
+            return (
+                <div className="admin-error">
+                    <div className="admin-error-icon">⚠️</div>
+                    <p>詳細データの読み込みに失敗しました</p>
+                    <p className="admin-error-detail">{detailError}</p>
+                    <button className="admin-retry-btn" onClick={() => handleSelectUser(selectedUserId)}>
+                        🔄 もう一度読み込む
+                    </button>
+                    <button className="admin-back-btn" onClick={handleBackToList} style={{ marginTop: '12px' }}>
+                        ← 一覧に戻る
+                    </button>
+                </div>
+            )
+        }
+
+        if (!userDetail) {
             return <div className="admin-loading">📡 データを読み込んでいます...</div>
         }
 
@@ -441,8 +468,6 @@ export default function AdminDashboard({ onBack }) {
                 pointRadius: 4,
             }],
         }
-
-        const timeSeriesData = buildTimeSeriesChart(userDetail)
 
         return (
             <div className="admin-user-detail">
@@ -467,18 +492,6 @@ export default function AdminDashboard({ onBack }) {
                             <Radar data={userRadarData} options={radarOptions} />
                         </div>
                     </div>
-
-                    {/* 時系列折れ線 */}
-                    <div className="admin-detail-card">
-                        <h3>📈 成長記録（時系列比較）</h3>
-                        {timeSeriesData ? (
-                            <Line data={timeSeriesData} options={lineOptions} />
-                        ) : (
-                            <p style={{ color: 'var(--color-neutral-500)', textAlign: 'center' }}>
-                                まだ比較データがありません。
-                            </p>
-                        )}
-                    </div>
                 </div>
 
                 {/* メタデータ */}
@@ -486,7 +499,7 @@ export default function AdminDashboard({ onBack }) {
                     <h3>📋 回答メタデータ</h3>
                     <div className="admin-metadata-grid">
                         <div className="admin-metadata-item">
-                            <div className="metadata-value">{userDetail.totalTime}</div>
+                            <div className="metadata-value">{formatTotalTime(userDetail) || '—'}</div>
                             <div className="metadata-label">回答時間</div>
                         </div>
                         <div className="admin-metadata-item">

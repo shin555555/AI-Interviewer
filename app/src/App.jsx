@@ -59,7 +59,11 @@ function App() {
 
   // --- 結果画面 ---
   if (screen === 'complete' && results) {
-    return <ResultScreen answers={results} userName={userName.trim()} />
+    return <ResultScreen answers={results} userName={userName.trim()} onBack={() => {
+      setScreen('welcome')
+      setResults(null)
+      setUserName('')
+    }} />
   }
 
   // --- 管理ダッシュボード ---
