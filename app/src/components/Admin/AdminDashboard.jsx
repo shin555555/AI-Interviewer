@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -16,6 +16,7 @@ import { Radar, Doughnut, Bar } from 'react-chartjs-2'
 import { fetchUsers, fetchUserDetail, calculateOverallStats } from '../../utils/spreadsheetAPI'
 import { calculateJobMatches, getTopRecommendations } from '../../utils/jobMatcher'
 import { generateStrengthDescriptions, generateExecutiveSummary, generateAccommodations, generateActionPlan } from '../../utils/strengthDescriptions'
+import { generateUserReportPDF } from '../../utils/pdfGenerator'
 import './AdminDashboard.css'
 
 // Chart.js 登録
@@ -55,6 +56,8 @@ export default function AdminDashboard({ onBack }) {
     const [userDetail, setUserDetail] = useState(null)
     const [detailLoading, setDetailLoading] = useState(false)
     const [detailError, setDetailError] = useState(null)
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+    const reportRef = useRef(null)
 
     // 初期データ読み込み
     const loadUsers = useCallback(async () => {
@@ -99,6 +102,40 @@ export default function AdminDashboard({ onBack }) {
         setSelectedUserId(null)
         setUserDetail(null)
     }, [])
+
+    // --- PDF生成ハンドラ ---
+    const handleDownloadUserPDF = useCallback(async (userName) => {
+        if (!reportRef.current) return
+        setIsGeneratingPDF(true)
+        try {
+            await generateUserReportPDF(reportRef.current, userName || '利用者')
+        } catch (err) {
+            console.error('PDF生成に失敗しました:', err)
+            alert('PDF生成に失敗しました。もう一度お試しください。')
+        } finally {
+            setIsGeneratingPDF(false)
+        }
+    }, [])
+
+    // 一覧から直接PDFを生成する（詳細を取得してから生成）
+    const handleQuickPDF = useCallback(async (userId, userName) => {
+        // まず詳細画面に遷移
+        await handleSelectUser(userId)
+        // 少し待ってDOMレンダリング完了を待つ
+        setTimeout(async () => {
+            if (reportRef.current) {
+                setIsGeneratingPDF(true)
+                try {
+                    await generateUserReportPDF(reportRef.current, userName || '利用者')
+                } catch (err) {
+                    console.error('PDF生成に失敗しました:', err)
+                    alert('PDF生成に失敗しました。もう一度お試しください。')
+                } finally {
+                    setIsGeneratingPDF(false)
+                }
+            }
+        }, 1500)
+    }, [handleSelectUser])
 
     // ============================================================
     // チャートデータ
@@ -362,9 +399,6 @@ export default function AdminDashboard({ onBack }) {
             <>
                 <div className="admin-main-header">
                     <h1>👥 利用者一覧</h1>
-                    <button className="admin-bulk-pdf-btn" disabled>
-                        📄 一括PDF出力（準備中）
-                    </button>
                 </div>
                 {renderUserTable(false)}
             </>
@@ -407,7 +441,7 @@ export default function AdminDashboard({ onBack }) {
                                 <td className="free-text-cell">
                                     {user.freeTexts?.[0] || '（なし）'}
                                 </td>
-                                <td>
+                                <td className="action-cell">
                                     <button
                                         className="admin-action-btn"
                                         onClick={(e) => {
@@ -416,6 +450,16 @@ export default function AdminDashboard({ onBack }) {
                                         }}
                                     >
                                         詳細
+                                    </button>
+                                    <button
+                                        className="admin-action-btn admin-pdf-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleQuickPDF(user.id, user.name)
+                                        }}
+                                        title="PDFをダウンロード"
+                                    >
+                                        📄
                                     </button>
                                 </td>
                             </tr>
@@ -471,60 +515,72 @@ export default function AdminDashboard({ onBack }) {
 
         return (
             <div className="admin-user-detail">
-                <button className="admin-back-btn" onClick={handleBackToList}>
-                    ← 一覧に戻る
-                </button>
-
-                <div className="admin-user-header">
-                    <h2>📋 {userDetail.name} の詳細</h2>
-                    <div className="admin-user-meta">
-                        <span>診断日: {userDetail.createdAt?.split('T')[0]}</span>
-                        <span>確信度: {userDetail.confidenceLevel}</span>
-                        <span>マッチ1位: {userDetail.topJob} ({userDetail.matchScore}%)</span>
-                    </div>
+                <div className="admin-detail-top-bar">
+                    <button className="admin-back-btn" onClick={handleBackToList}>
+                        ← 一覧に戻る
+                    </button>
+                    <button
+                        className="admin-detail-pdf-btn"
+                        onClick={() => handleDownloadUserPDF(userDetail.name)}
+                        disabled={isGeneratingPDF}
+                        id="admin-pdf-download-btn"
+                    >
+                        {isGeneratingPDF ? '⏳ 作成中...' : '📄 PDFをダウンロード'}
+                    </button>
                 </div>
 
-                <div className="admin-detail-charts">
-                    {/* 個人レーダーチャート */}
-                    <div className="admin-detail-card">
-                        <h3>🔷 属性スコア</h3>
-                        <div className="admin-chart-wrapper">
-                            <Radar data={userRadarData} options={radarOptions} />
+                <div ref={reportRef}>
+                    <div className="admin-user-header">
+                        <h2>📋 {userDetail.name} の詳細</h2>
+                        <div className="admin-user-meta">
+                            <span>診断日: {userDetail.createdAt?.split('T')[0]}</span>
+                            <span>確信度: {userDetail.confidenceLevel}</span>
+                            <span>マッチ1位: {userDetail.topJob} ({userDetail.matchScore}%)</span>
                         </div>
                     </div>
-                </div>
 
-                {/* メタデータ */}
-                <div className="admin-detail-card" style={{ marginBottom: 'var(--space-6)' }}>
-                    <h3>📋 回答メタデータ</h3>
-                    <div className="admin-metadata-grid">
-                        <div className="admin-metadata-item">
-                            <div className="metadata-value">{formatTotalTime(userDetail) || '—'}</div>
-                            <div className="metadata-label">回答時間</div>
-                        </div>
-                        <div className="admin-metadata-item">
-                            <div className="metadata-value">{userDetail.confidenceLevel}</div>
-                            <div className="metadata-label">確信度</div>
-                        </div>
-                        <div className="admin-metadata-item">
-                            <div className="metadata-value">{userDetail.contradictions?.length || 0}項目</div>
-                            <div className="metadata-label">矛盾フラグ</div>
+                    <div className="admin-detail-charts">
+                        {/* 個人レーダーチャート */}
+                        <div className="admin-detail-card">
+                            <h3>🔷 属性スコア</h3>
+                            <div className="admin-chart-wrapper">
+                                <Radar data={userRadarData} options={radarOptions} />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* ========== レポート詳細エリア ========== */}
-                {renderReportDetail()}
-
-                {/* 自由記述 */}
-                {userDetail.freeTexts && userDetail.freeTexts.length > 0 && (
-                    <div className="admin-free-texts">
-                        <h3>💬 自由記述</h3>
-                        {userDetail.freeTexts.map((text, i) => (
-                            <div key={i} className="admin-free-text-item">{text}</div>
-                        ))}
+                    {/* メタデータ */}
+                    <div className="admin-detail-card" style={{ marginBottom: 'var(--space-6)' }}>
+                        <h3>📋 回答メタデータ</h3>
+                        <div className="admin-metadata-grid">
+                            <div className="admin-metadata-item">
+                                <div className="metadata-value">{formatTotalTime(userDetail) || '—'}</div>
+                                <div className="metadata-label">回答時間</div>
+                            </div>
+                            <div className="admin-metadata-item">
+                                <div className="metadata-value">{userDetail.confidenceLevel}</div>
+                                <div className="metadata-label">確信度</div>
+                            </div>
+                            <div className="admin-metadata-item">
+                                <div className="metadata-value">{userDetail.contradictions?.length || 0}項目</div>
+                                <div className="metadata-label">矛盾フラグ</div>
+                            </div>
+                        </div>
                     </div>
-                )}
+
+                    {/* ========== レポート詳細エリア ========== */}
+                    {renderReportDetail()}
+
+                    {/* 自由記述 */}
+                    {userDetail.freeTexts && userDetail.freeTexts.length > 0 && (
+                        <div className="admin-free-texts">
+                            <h3>💬 自由記述</h3>
+                            {userDetail.freeTexts.map((text, i) => (
+                                <div key={i} className="admin-free-text-item">{text}</div>
+                            ))}
+                        </div>
+                    )}
+                </div>{/* end of reportRef */}
             </div>
         )
     }
