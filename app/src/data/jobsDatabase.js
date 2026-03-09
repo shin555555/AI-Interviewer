@@ -198,4 +198,124 @@ export const JOBS_DATABASE = [
         id: 'job_40', name: 'デザイン業務補助', categoryId: 'specialist',
         required: [4, 4, 2, 4, 3, 4, 3, 4, 3, 3]
     },
+
+    // === 【フェーズ13追加】IT・オフィス関連 ===
+    {
+        id: 'job_41', name: 'プログラミング補助', categoryId: 'office_it',
+        required: [5, 5, 2, 5, 3, 5, 3, 5, 2, 3]
+    },
+    {
+        id: 'job_42', name: 'サーバー監視', categoryId: 'office_it',
+        required: [5, 5, 2, 5, 4, 5, 4, 5, 1, 3]
+    },
+    {
+        id: 'job_43', name: '経理（仕訳入力）', categoryId: 'office_it',
+        required: [5, 4, 1, 4, 3, 5, 3, 5, 1, 2]
+    },
+    {
+        id: 'job_44', name: 'Webデザイン補助', categoryId: 'office_it',
+        required: [4, 4, 2, 5, 4, 4, 3, 3, 3, 4]
+    },
+    {
+        id: 'job_45', name: 'SNS運用代行', categoryId: 'office_it',
+        required: [4, 4, 1, 5, 4, 4, 4, 3, 4, 5]
+    },
+    {
+        id: 'job_46', name: 'テストエンジニア', categoryId: 'office_it',
+        required: [5, 5, 2, 5, 4, 5, 3, 5, 2, 4]
+    },
+
+    // === 【フェーズ13追加】クリエイティブ・専門系 ===
+    {
+        id: 'job_47', name: 'DTPオペレーター', categoryId: 'specialist',
+        required: [5, 5, 2, 5, 3, 5, 3, 4, 2, 2]
+    },
+    {
+        id: 'job_48', name: 'CADオペレーター', categoryId: 'specialist',
+        required: [5, 5, 2, 5, 4, 5, 3, 5, 1, 3]
+    },
+    {
+        id: 'job_49', name: '翻訳チェッカー', categoryId: 'specialist',
+        required: [5, 5, 2, 4, 3, 5, 3, 5, 1, 2]
+    },
+    {
+        id: 'job_50', name: '動画編集補助', categoryId: 'specialist',
+        required: [4, 5, 2, 5, 3, 5, 3, 4, 3, 3]
+    },
+    {
+        id: 'job_51', name: 'イラストレーター補助', categoryId: 'specialist',
+        required: [3, 5, 2, 5, 4, 5, 3, 3, 3, 4]
+    },
+    {
+        id: 'job_52', name: 'ポップ作成・手書き看板', categoryId: 'specialist',
+        required: [4, 4, 2, 1, 3, 5, 3, 3, 3, 3]
+    },
+    {
+        id: 'job_53', name: 'ペットケア補助', categoryId: 'specialist',
+        required: [3, 4, 4, 1, 3, 3, 4, 4, 5, 2]
+    },
+
+    // === 【フェーズ13追加】接客・サービス・飲食 ===
+    {
+        id: 'job_54', name: 'カフェスタッフ', categoryId: 'cooking',
+        required: [3, 3, 4, 2, 4, 3, 4, 4, 4, 4]
+    },
+    {
+        id: 'job_55', name: 'ファミレスホール', categoryId: 'cooking',
+        required: [3, 3, 5, 2, 4, 3, 5, 4, 4, 4]
+    },
+    {
+        id: 'job_56', name: 'キッチン・仕込み専従', categoryId: 'cooking',
+        required: [4, 4, 4, 1, 2, 4, 3, 4, 2, 1]
+    },
+    {
+        id: 'job_57', name: '弁当盛り付け', categoryId: 'cooking',
+        required: [4, 4, 3, 1, 1, 5, 2, 4, 1, 1]
+    },
+    {
+        id: 'job_58', name: 'レジ打ち専従', categoryId: 'cooking',
+        required: [5, 4, 4, 3, 3, 4, 5, 4, 2, 2]
+    },
+    {
+        id: 'job_59', name: 'ホテルフロント補助', categoryId: 'cooking',
+        required: [4, 3, 3, 4, 5, 4, 5, 5, 4, 4]
+    },
+
+    // === 【フェーズ13追加】物流・軽作業・清掃・その他 ===
+    {
+        id: 'job_60', name: '郵便物仕分け', categoryId: 'logistics',
+        required: [4, 4, 3, 1, 2, 4, 2, 4, 1, 1]
+    },
+    {
+        id: 'job_61', name: '出前・デリバリー', categoryId: 'logistics',
+        required: [3, 3, 5, 4, 4, 3, 4, 4, 4, 3]
+    },
+    {
+        id: 'job_62', name: 'ポスティング', categoryId: 'logistics',
+        required: [3, 5, 5, 1, 2, 3, 3, 4, 3, 1]
+    },
+    {
+        id: 'job_63', name: '倉庫内フォークリフト', categoryId: 'logistics',
+        required: [5, 4, 4, 2, 4, 5, 3, 5, 2, 3]
+    },
+    {
+        id: 'job_64', name: '商品補充・品出し', categoryId: 'logistics',
+        required: [3, 4, 4, 2, 3, 3, 3, 4, 2, 2]
+    },
+    {
+        id: 'job_65', name: '窓拭き清掃', categoryId: 'cleaning',
+        required: [4, 4, 4, 1, 2, 4, 3, 4, 2, 1]
+    },
+    {
+        id: 'job_66', name: '駐車場管理・誘導', categoryId: 'cleaning',
+        required: [3, 4, 5, 1, 4, 3, 4, 4, 3, 3]
+    },
+    {
+        id: 'job_67', name: '施設警備', categoryId: 'cleaning',
+        required: [4, 4, 4, 2, 5, 4, 4, 5, 3, 3]
+    },
+    {
+        id: 'job_68', name: '農業（収穫作業）', categoryId: 'specialist',
+        required: [3, 5, 5, 1, 2, 4, 3, 4, 2, 1]
+    }
 ]
