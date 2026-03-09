@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { selectRandomQuestions, AI_RESPONSES, generateSessionCode } from '../../data/questionPool'
+import { selectRandomExperienceQuestions } from '../../data/experiencePool'
 import ChatBubble from './ChatBubble'
 import ChoiceButtons from './ChoiceButtons'
 import './InterviewScreen.css'
@@ -7,15 +8,22 @@ import './InterviewScreen.css'
 /** セッションデータをLocalStorageに保存するキー */
 const LS_KEY = 'wp_session'
 
+/** 第1部の問題数 */
+const PART1_COUNT = 30
+
 /**
  * InterviewScreen - チャット型インタビューのメイン画面
- * 
- * PCファーストの対話型UIで30問を順番に出題し、
- * 選択肢ボタンと任意のテキスト入力で回答を受け付ける。
+ *
+ * 第1部（性格テスト30問）と第2部（経験テスト10問）を
+ * チャットUI内でシームレスに出題する。
  */
 export default function InterviewScreen({ onComplete, userName = '' }) {
-    // --- ランダム出題の30問を生成 ---
-    const QUESTIONS = useMemo(() => selectRandomQuestions(3), [])
+    // --- ランダム出題：第1部30問 + 第2部10問 ---
+    const QUESTIONS = useMemo(() => {
+        const part1 = selectRandomQuestions(3)
+        const part2 = selectRandomExperienceQuestions(2)
+        return [...part1, ...part2]
+    }, [])
 
     // --- State ---
     const [sessionCode, setSessionCode] = useState('')
@@ -27,6 +35,7 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
     const [supplementText, setSupplementText] = useState('')
     const [fontScale, setFontScale] = useState('normal')
     const [isTyping, setIsTyping] = useState(false)
+    const [waitingForPart2Start, setWaitingForPart2Start] = useState(false)
 
     // メタデータ計測用
     const questionShownAt = useRef(null)
@@ -35,6 +44,9 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
 
     const chatEndRef = useRef(null)
     const inputRef = useRef(null)
+
+    // --- 現在のパートを判定 ---
+    const currentPart = currentIndex < PART1_COUNT ? 1 : 2
 
     // --- 自動スクロール ---
     const scrollToBottom = useCallback(() => {
@@ -55,7 +67,8 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                     setCurrentIndex(data.currentIndex || 0)
                     setMessages(data.messages || [])
                     setAnswers(data.answers || [])
-                    if (data.started && data.currentIndex < QUESTIONS.length) {
+                    setWaitingForPart2Start(data.waitingForPart2Start || false)
+                    if (data.started && !data.waitingForPart2Start && data.currentIndex < QUESTIONS.length) {
                         setWaitingForChoice(true)
                     }
                 }
@@ -68,10 +81,10 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
     // --- LocalStorage保存 ---
     useEffect(() => {
         if (sessionCode) {
-            const data = { sessionCode, started, currentIndex, messages, answers, userName }
+            const data = { sessionCode, started, currentIndex, messages, answers, userName, waitingForPart2Start }
             localStorage.setItem(LS_KEY, JSON.stringify(data))
         }
-    }, [sessionCode, started, currentIndex, messages, answers, userName])
+    }, [sessionCode, started, currentIndex, messages, answers, userName, waitingForPart2Start])
 
     // --- セッション開始（初回） ---
     const handleStart = useCallback(() => {
@@ -124,7 +137,8 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                     setMessages(data.messages || [])
                     setAnswers(data.answers || [])
                     setShowResumeInput(false)
-                    if (data.started && data.currentIndex < QUESTIONS.length) {
+                    setWaitingForPart2Start(data.waitingForPart2Start || false)
+                    if (data.started && !data.waitingForPart2Start && data.currentIndex < QUESTIONS.length) {
                         setWaitingForChoice(true)
                     }
                     return
@@ -161,6 +175,33 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
         scrollToBottom()
     }, [scrollToBottom])
 
+    // --- 第2部開始ボタン押下 ---
+    const handleStartPart2 = useCallback(() => {
+        setWaitingForPart2Start(false)
+        setMessages(prev => [
+            ...prev,
+            { type: 'user', text: '続ける' },
+        ])
+
+        // 第2部の最初の質問を表示
+        setIsTyping(true)
+        setTimeout(() => {
+            setIsTyping(false)
+            const q = QUESTIONS[PART1_COUNT]
+            setMessages(prev => [
+                ...prev,
+                { type: 'system', text: q.text, questionId: q.id },
+            ])
+            setWaitingForChoice(true)
+            questionShownAt.current = Date.now()
+            toggleCountRef.current = 0
+            selectedChoiceRef.current = null
+            scrollToBottom()
+        }, 800)
+
+        scrollToBottom()
+    }, [scrollToBottom])
+
     // --- 選択肢をクリック ---
     const handleChoiceSelect = useCallback((choiceIndex) => {
         if (selectedChoiceRef.current !== null && selectedChoiceRef.current !== choiceIndex) {
@@ -168,6 +209,74 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
         }
         selectedChoiceRef.current = choiceIndex
     }, [])
+
+    // --- 次の質問を表示する共通処理 ---
+    const showNextQuestion = useCallback((nextIndex, newAnswers) => {
+        // 第1部最終問 → 第2部トランジション
+        if (nextIndex === PART1_COUNT) {
+            setIsTyping(true)
+            setTimeout(() => {
+                setMessages(prev => [
+                    ...prev,
+                    { type: 'system', text: '前半のテストが終了しました。ここまでお疲れさまでした。' },
+                ])
+                scrollToBottom()
+
+                setTimeout(() => {
+                    setIsTyping(false)
+                    setMessages(prev => [
+                        ...prev,
+                        { type: 'system', text: 'ここからは、これまでの経験や趣味について10問だけ質問させてください。\n気軽に答えていただければ大丈夫です。' },
+                    ])
+                    setCurrentIndex(nextIndex)
+                    setWaitingForPart2Start(true)
+                    scrollToBottom()
+                }, 1000)
+            }, 800)
+            return
+        }
+
+        // 全問完了（第2部終了）
+        if (nextIndex >= QUESTIONS.length) {
+            setIsTyping(true)
+            setTimeout(() => {
+                setIsTyping(false)
+                setMessages(prev => [
+                    ...prev,
+                    { type: 'system', text: 'すべての質問に答えていただき、ありがとうございました。\nあなたの結果をまとめています...' },
+                ])
+                setCurrentIndex(nextIndex)
+                scrollToBottom()
+                setTimeout(() => {
+                    if (onComplete) onComplete(newAnswers, userName)
+                }, 1500)
+            }, 1000)
+            return
+        }
+
+        // 通常の次の質問
+        setIsTyping(true)
+        const aiResponse = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)]
+        setTimeout(() => {
+            setMessages(prev => [...prev, { type: 'system', text: aiResponse }])
+            scrollToBottom()
+
+            setTimeout(() => {
+                setIsTyping(false)
+                const nextQ = QUESTIONS[nextIndex]
+                setMessages(prev => [
+                    ...prev,
+                    { type: 'system', text: nextQ.text, questionId: nextQ.id },
+                ])
+                setCurrentIndex(nextIndex)
+                setWaitingForChoice(true)
+                questionShownAt.current = Date.now()
+                toggleCountRef.current = 0
+                selectedChoiceRef.current = null
+                scrollToBottom()
+            }, 600)
+        }, 800)
+    }, [scrollToBottom, onComplete, userName])
 
     // --- 回答を確定 ---
     const handleChoiceConfirm = useCallback((choiceIndex) => {
@@ -178,7 +287,8 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
         // 回答データを記録
         const answerData = {
             questionId: q.id,
-            attributeId: q.attributeId,
+            attributeId: q.attributeId || null,
+            categoryId: q.categoryId || null,
             choiceIndex,
             score: choice.score,
             responseTimeMs,
@@ -200,60 +310,20 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
 
         scrollToBottom()
 
-        // 次の質問、または完了
-        const nextIndex = currentIndex + 1
-        if (nextIndex >= QUESTIONS.length) {
-            // 全問完了
-            setIsTyping(true)
-            setTimeout(() => {
-                setIsTyping(false)
-                setMessages(prev => [
-                    ...prev,
-                    { type: 'system', text: 'すべての質問に答えていただき、ありがとうございました。\nあなたの結果をまとめています...' },
-                ])
-                setCurrentIndex(nextIndex)
-                scrollToBottom()
-                // 完了コールバック
-                setTimeout(() => {
-                    if (onComplete) onComplete(newAnswers, userName)
-                }, 1500)
-            }, 1000)
-        } else {
-            // 相槌 + 次の質問
-            setIsTyping(true)
-            const aiResponse = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)]
-            setTimeout(() => {
-                setMessages(prev => [...prev, { type: 'system', text: aiResponse }])
-                scrollToBottom()
+        showNextQuestion(currentIndex + 1, newAnswers)
+    }, [currentIndex, answers, supplementText, scrollToBottom, showNextQuestion])
 
-                setTimeout(() => {
-                    setIsTyping(false)
-                    const nextQ = QUESTIONS[nextIndex]
-                    setMessages(prev => [
-                        ...prev,
-                        { type: 'system', text: nextQ.text, questionId: nextQ.id },
-                    ])
-                    setCurrentIndex(nextIndex)
-                    setWaitingForChoice(true)
-                    questionShownAt.current = Date.now()
-                    toggleCountRef.current = 0
-                    selectedChoiceRef.current = null
-                    scrollToBottom()
-                }, 600)
-            }, 800)
-        }
-    }, [currentIndex, answers, supplementText, scrollToBottom, onComplete, userName])
-
-    // --- 自由記述のみでスキップ（3択を回答せずに次へ） ---
+    // --- 自由記述のみでスキップ（選択肢を回答せずに次へ） ---
     const handleSkipWithText = useCallback(() => {
         const q = QUESTIONS[currentIndex]
         const responseTimeMs = questionShownAt.current ? (Date.now() - questionShownAt.current) : 0
 
         const answerData = {
             questionId: q.id,
-            attributeId: q.attributeId,
+            attributeId: q.attributeId || null,
+            categoryId: q.categoryId || null,
             choiceIndex: -1,
-            score: 2,  // 中間値をデフォルトに
+            score: q.choices.length === 5 ? 3 : 2,  // 5択の場合は中間値3、3択の場合は2
             responseTimeMs,
             toggleCount: 0,
             freeText: supplementText.trim(),
@@ -267,51 +337,15 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
         setSupplementText('')
         scrollToBottom()
 
-        const nextIndex = currentIndex + 1
-        if (nextIndex >= QUESTIONS.length) {
-            setIsTyping(true)
-            setTimeout(() => {
-                setIsTyping(false)
-                setMessages(prev => [
-                    ...prev,
-                    { type: 'system', text: 'すべての質問に答えていただき、ありがとうございました。\nあなたの結果をまとめています...' },
-                ])
-                setCurrentIndex(nextIndex)
-                scrollToBottom()
-                setTimeout(() => {
-                    if (onComplete) onComplete(newAnswers, userName)
-                }, 1500)
-            }, 1000)
-        } else {
-            setIsTyping(true)
-            const aiResponse = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)]
-            setTimeout(() => {
-                setMessages(prev => [...prev, { type: 'system', text: aiResponse }])
-                scrollToBottom()
-                setTimeout(() => {
-                    setIsTyping(false)
-                    const nextQ = QUESTIONS[nextIndex]
-                    setMessages(prev => [
-                        ...prev,
-                        { type: 'system', text: nextQ.text, questionId: nextQ.id },
-                    ])
-                    setCurrentIndex(nextIndex)
-                    setWaitingForChoice(true)
-                    questionShownAt.current = Date.now()
-                    toggleCountRef.current = 0
-                    selectedChoiceRef.current = null
-                    scrollToBottom()
-                }, 600)
-            }, 800)
-        }
-    }, [currentIndex, answers, supplementText, scrollToBottom, onComplete, userName])
+        showNextQuestion(currentIndex + 1, newAnswers)
+    }, [currentIndex, answers, supplementText, scrollToBottom, showNextQuestion])
 
     // --- 中断ボタン ---
     const handlePause = useCallback(() => {
-        const data = { sessionCode, started, currentIndex, messages, answers }
+        const data = { sessionCode, started, currentIndex, messages, answers, waitingForPart2Start }
         localStorage.setItem(LS_KEY, JSON.stringify(data))
         alert(`中断しました。再開コード【 ${sessionCode} 】を使って、いつでも続きから始められます。`)
-    }, [sessionCode, started, currentIndex, messages, answers])
+    }, [sessionCode, started, currentIndex, messages, answers, waitingForPart2Start])
 
     // --- 文字サイズ切り替え ---
     const cycleFontScale = useCallback(() => {
@@ -324,6 +358,9 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
 
     // --- 進捗計算 ---
     const progress = Math.round((currentIndex / QUESTIONS.length) * 100)
+    const partLabel = currentPart === 1
+        ? `第1部 ${Math.min(currentIndex, PART1_COUNT)}/${PART1_COUNT}`
+        : `第2部 ${currentIndex - PART1_COUNT}/${QUESTIONS.length - PART1_COUNT}`
 
     return (
         <div
@@ -361,7 +398,7 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
             {started && (
                 <div className="progress-bar-container">
                     <div className="progress-bar" style={{ width: `${progress}%` }}>
-                        <span className="progress-label">{currentIndex}/{QUESTIONS.length}</span>
+                        <span className="progress-label">{partLabel}</span>
                     </div>
                 </div>
             )}
@@ -426,6 +463,19 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                             <button className="btn btn-primary" onClick={handleResume} id="resume-btn">再開する</button>
                             <button className="btn btn-secondary" onClick={() => setShowResumeInput(false)}>戻る</button>
                         </div>
+                    </div>
+                )}
+
+                {/* 第2部トランジション：「続ける」ボタン */}
+                {waitingForPart2Start && (
+                    <div className="action-buttons animate-fade-in-up">
+                        <button
+                            className="btn btn-primary btn-action"
+                            onClick={handleStartPart2}
+                            id="start-part2-btn"
+                        >
+                            続ける
+                        </button>
                     </div>
                 )}
 

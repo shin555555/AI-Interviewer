@@ -449,3 +449,23 @@ export const EXPERIENCE_QUESTIONS = [
         ]
     }
 ];
+
+/**
+ * 5カテゴリーからバランスよくランダムに経験質問を抽出する
+ * 各カテゴリーから2問ずつ = 計10問
+ *
+ * @param {number} questionsPerCategory - カテゴリーごとの出題数（デフォルト: 2）
+ * @returns {Array} ランダムに選ばれた経験質問の配列
+ */
+export function selectRandomExperienceQuestions(questionsPerCategory = 2) {
+    const categories = ['office_it', 'logistics', 'cleaning', 'cooking', 'specialist']
+    const selected = []
+
+    categories.forEach(cat => {
+        const pool = EXPERIENCE_QUESTIONS.filter(q => q.categoryId === cat)
+        const shuffled = [...pool].sort(() => Math.random() - 0.5)
+        selected.push(...shuffled.slice(0, questionsPerCategory))
+    })
+
+    return selected
+}
