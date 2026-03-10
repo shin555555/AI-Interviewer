@@ -16,6 +16,7 @@ description: ["プロジェクトの仕様と現在の進捗を読み込み、AI
    - `c:\Users\user\Desktop\AI-Interviewer\docs\architecture\logic_spec.md` (アルゴリズムとロジック)
    - `c:\Users\user\Desktop\AI-Interviewer\docs\specs\ui_wireframe.md` (画面設計図)
    - `c:\Users\user\Desktop\AI-Interviewer\docs\specs\questions.md` (30問の質問マスターデータ)
+   - `c:\Users\user\Desktop\AI-Interviewer\深掘り対話モード実装計画書.md` (深掘り対話モード実装計画)
 
 2. すべての読み込みが完了したら、ユーザーに対して以下のように報告すること。
    - 「プロジェクトの要件と現在の進捗を完全に把握しました。」
