@@ -10,7 +10,7 @@ import {
 } from 'chart.js'
 import { Radar } from 'react-chartjs-2'
 import { calculateAttributeScores } from '../../utils/scoreCalculator'
-import { calculateJobMatches, getTopRecommendations } from '../../utils/jobMatcher'
+import { calculateJobMatches, getTopRecommendations, calculateExperienceScores } from '../../utils/jobMatcher'
 import { generateStrengthDescriptions, generateExecutiveSummary, generateAccommodations, generateActionPlan } from '../../utils/strengthDescriptions'
 import { generatePDF } from '../../utils/pdfGenerator'
 import { saveUserResult } from '../../utils/spreadsheetAPI'
@@ -34,7 +34,8 @@ export default function ResultScreen({ answers, userName = '', onBack }) {
     // 全ての解析を実行
     const analysis = useMemo(() => {
         const attrResult = calculateAttributeScores(answers)
-        const jobMatches = calculateJobMatches(attrResult.scores)
+        const experienceScores = calculateExperienceScores(answers)
+        const jobMatches = calculateJobMatches(attrResult.scores, experienceScores)
         const recommendations = getTopRecommendations(jobMatches)
         const strengths = generateStrengthDescriptions(attrResult.scores)
         const summary = generateExecutiveSummary(attrResult.scores)

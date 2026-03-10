@@ -1,15 +1,17 @@
 /**
  * jobMatcher.js
- * 
+ *
  * 適職マッチング（MatchScore）計算モジュール
- * 
- * 計算式: MatchScore = 100 - (Σ|U_i - R_i| × weight)
- * 
+ *
+ * 計算式: FinalScore = BaseScore + ExperienceBonus
+ *   BaseScore = 100 - (Σ|U_i - R_i| × weight × 2.5)
+ *   ExperienceBonus = カテゴリー一致時、経験スコア平均に基づく加点（最大15点）
+ *
  * 【重要：柔軟性(I4)の反転ロジック】
  * ルーティンワークが重要な職種（データ入力、梱包等）では、
  * 柔軟性スコアが低い = 適合度が高い と判定する。
  * 「変化が苦手」を「ルーティンへの適性」として正しく評価。
- * 
+ *
  * 具体的には: 職種のI4要求値が3未満の場合、ユーザーの柔軟性スコアを反転させる。
  * 反転式: U_I4_inverted = (5 + 1) - U_I4 = 6 - U_I4
  */
@@ -40,13 +42,46 @@ const WEIGHTS = {
 const FLEXIBILITY_INVERSION_THRESHOLD = 3
 
 /**
- * 全40職種に対するマッチスコアを計算し、降順にソートして返す
- * 
- * @param {Object} attributeScores - calculateAttributeScores() の戻り値の .scores
- * @returns {Array} ソート済みのマッチ結果配列
- *   [{ job, matchScore, details: [{ attr, userScore, requiredScore, diff }] }, ...]
+ * 経験スコアボーナスの最大値（点）
+ * 経験スコア平均が5の場合にこの値が満額加算される
  */
-export function calculateJobMatches(attributeScores) {
+const MAX_EXPERIENCE_BONUS = 15
+
+/**
+ * 第2部（経験テスト）の回答からカテゴリーごとの平均経験スコアを算出する
+ *
+ * @param {Array} answers - 全回答データ（第1部+第2部）
+ * @returns {Object} { office_it: 3.5, logistics: 4.0, ... } カテゴリー別平均スコア
+ */
+export function calculateExperienceScores(answers) {
+    const categoryScores = {}
+
+    answers.forEach(a => {
+        // 第2部の回答のみ（categoryIdあり、attributeIdなし）
+        if (!a.categoryId || a.attributeId) return
+        if (!categoryScores[a.categoryId]) {
+            categoryScores[a.categoryId] = { total: 0, count: 0 }
+        }
+        categoryScores[a.categoryId].total += a.score
+        categoryScores[a.categoryId].count += 1
+    })
+
+    const result = {}
+    Object.entries(categoryScores).forEach(([catId, data]) => {
+        result[catId] = data.count > 0 ? data.total / data.count : 0
+    })
+    return result
+}
+
+/**
+ * 全68職種に対するマッチスコアを計算し、降順にソートして返す
+ *
+ * @param {Object} attributeScores - calculateAttributeScores() の戻り値の .scores
+ * @param {Object} [experienceScores={}] - calculateExperienceScores() の戻り値（カテゴリー別平均スコア）
+ * @returns {Array} ソート済みのマッチ結果配列
+ *   [{ job, matchScore, baseScore, experienceBonus, details: [...] }, ...]
+ */
+export function calculateJobMatches(attributeScores, experienceScores = {}) {
     // ユーザースコアを配列形式に変換（正規化済み1〜5）
     const userScores = ATTRIBUTE_KEYS.map(key => attributeScores[key]?.normalized ?? 3)
 
@@ -81,8 +116,19 @@ export function calculateJobMatches(attributeScores) {
             })
         })
 
-        // MatchScore = 100 - 合計ペナルティ（下限0）
-        const matchScore = Math.max(0, Math.round((100 - totalPenalty * 2.5) * 10) / 10)
+        // BaseScore = 100 - 合計ペナルティ（下限0）
+        const baseScore = Math.max(0, Math.round((100 - totalPenalty * 2.5) * 10) / 10)
+
+        // 【経験スコア加点】職種カテゴリーと一致する経験スコアがあればボーナス
+        // ボーナス = (カテゴリー平均スコア - 1) / (5 - 1) × MAX_EXPERIENCE_BONUS
+        // スコア1（未経験・やりたくない）→ 0点、スコア5（プロ級）→ 15点
+        const catExpScore = experienceScores[job.categoryId] || 0
+        const experienceBonus = catExpScore > 0
+            ? Math.round(((catExpScore - 1) / 4) * MAX_EXPERIENCE_BONUS * 10) / 10
+            : 0
+
+        // FinalScore = BaseScore + ExperienceBonus（上限100）
+        const matchScore = Math.min(100, Math.round((baseScore + experienceBonus) * 10) / 10)
 
         // カテゴリー情報を付与
         const category = JOB_CATEGORIES.find(c => c.id === job.categoryId)
@@ -96,6 +142,8 @@ export function calculateJobMatches(attributeScores) {
                 categoryIcon: category?.icon ?? '',
             },
             matchScore,
+            baseScore,
+            experienceBonus,
             details,
         }
     })
