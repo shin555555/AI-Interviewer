@@ -1,0 +1,286 @@
+/* ========================================================
+   DeepDiveResultScreen.css - 対話結果画面のスタイル
+   ======================================================== */
+
+.ddresult-screen {
+    min-height: 100vh;
+    background: linear-gradient(
+        135deg,
+        var(--color-primary-50) 0%,
+        var(--color-neutral-0) 40%,
+        var(--color-secondary-50) 100%
+    );
+    padding-bottom: var(--space-16);
+}
+
+/* --- ヘッダー --- */
+.ddresult-header {
+    text-align: center;
+    padding: var(--space-10) var(--space-5) var(--space-6);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.ddresult-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-700);
+    margin-bottom: var(--space-2);
+}
+
+.ddresult-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-neutral-500);
+}
+
+/* --- メインコンテンツ --- */
+.ddresult-main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+}
+
+/* --- セクション共通 --- */
+.ddresult-section {
+    background: var(--color-neutral-0);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+    animation: fadeInUp 0.5s ease-out both;
+}
+
+.ddresult-section:nth-child(2) { animation-delay: 0.1s; }
+.ddresult-section:nth-child(3) { animation-delay: 0.2s; }
+.ddresult-section:nth-child(4) { animation-delay: 0.3s; }
+
+.ddresult-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-neutral-800);
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-3);
+    border-bottom: 2px solid var(--color-primary-100);
+}
+
+/* --- タグチップ --- */
+.ddresult-tag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.ddresult-tag-chip {
+    display: inline-block;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.ddresult-tag-environment {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.ddresult-tag-action {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.ddresult-tag-feeling {
+    background: #fce4ec;
+    color: #c62828;
+}
+
+.ddresult-tag-strength {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* --- トリセツ --- */
+.ddresult-torisetsu-block {
+    margin-bottom: var(--space-5);
+}
+
+.ddresult-torisetsu-block:last-child {
+    margin-bottom: 0;
+}
+
+.ddresult-block-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary-600);
+    margin-bottom: var(--space-3);
+}
+
+.ddresult-block-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.ddresult-block-list li {
+    position: relative;
+    padding-left: var(--space-5);
+    font-size: var(--font-size-base);
+    color: var(--color-neutral-700);
+    line-height: var(--line-height-loose);
+}
+
+.ddresult-block-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-secondary-400);
+}
+
+/* --- リフレーミングカード --- */
+.ddresult-reframing-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.ddresult-reframing-card {
+    background: linear-gradient(135deg, #fafafa 0%, #f5f7ff 100%);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    text-align: center;
+}
+
+.ddresult-reframing-negative {
+    font-size: var(--font-size-base);
+    color: var(--color-neutral-500);
+    text-decoration: line-through;
+    margin-bottom: var(--space-2);
+}
+
+.ddresult-reframing-arrow {
+    font-size: var(--font-size-xl);
+    color: var(--color-secondary-500);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space-2);
+}
+
+.ddresult-reframing-positive {
+    font-size: var(--font-size-md);
+    color: var(--color-secondary-700);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-loose);
+}
+
+/* --- 代弁カード --- */
+.ddresult-advocacy-intro {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);
+    margin-bottom: var(--space-5);
+    line-height: var(--line-height-loose);
+}
+
+.ddresult-advocacy-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.ddresult-advocacy-card {
+    border: 1px solid var(--color-neutral-200);
+    border-left: 4px solid var(--color-primary-400);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    background: var(--color-neutral-0);
+}
+
+.ddresult-advocacy-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-600);
+    margin-bottom: var(--space-3);
+}
+
+.ddresult-advocacy-staff {
+    font-size: var(--font-size-base);
+    color: var(--color-neutral-700);
+    line-height: var(--line-height-loose);
+    margin-bottom: var(--space-3);
+}
+
+.ddresult-advocacy-suggestion {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);
+    background: var(--color-primary-50);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    line-height: var(--line-height-loose);
+}
+
+.ddresult-advocacy-suggestion strong {
+    color: var(--color-primary-700);
+}
+
+/* --- フッター --- */
+.ddresult-footer {
+    max-width: 640px;
+    margin: var(--space-10) auto 0;
+    padding: 0 var(--space-5);
+    text-align: center;
+}
+
+.ddresult-back-btn {
+    padding: var(--space-4) var(--space-10);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-0);
+    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 14px rgba(33, 150, 243, 0.35);
+}
+
+.ddresult-back-btn:hover {
+    background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-500) 100%);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
+    transform: translateY(-2px);
+}
+
+/* --- アニメーション --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- レスポンシブ --- */
+@media (max-width: 768px) {
+    .ddresult-header {
+        padding: var(--space-6) var(--space-4) var(--space-4);
+    }
+
+    .ddresult-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .ddresult-main {
+        padding: 0 var(--space-3);
+    }
+
+    .ddresult-section {
+        padding: var(--space-5);
+    }
+}

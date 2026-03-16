@@ -1,0 +1,414 @@
+/* ========================================================
+   DeepDiveScreen.css - 深掘り対話モードのスタイル
+   ======================================================== */
+
+/* --- 全体レイアウト --- */
+.deepdive-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(
+        180deg,
+        var(--color-neutral-0) 0%,
+        #f0f4ff 100%
+    );
+}
+
+/* --- ヘッダー --- */
+.deepdive-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-5);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-neutral-200);
+    min-height: 52px;
+    z-index: 10;
+}
+
+.deepdive-back-btn {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-neutral-600);
+    background: transparent;
+    border: 1px solid var(--color-neutral-300);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.deepdive-back-btn:hover {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-800);
+}
+
+.deepdive-header-center {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.deepdive-title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-700);
+}
+
+.deepdive-phase-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-0);
+    background: var(--color-primary-500);
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-full);
+}
+
+.deepdive-turn-indicator {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-500);
+    min-width: 40px;
+    text-align: right;
+}
+
+/* --- プログレスバー --- */
+.deepdive-progress-bar {
+    position: relative;
+    height: 4px;
+    background: var(--color-neutral-200);
+    overflow: visible;
+}
+
+.deepdive-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary-400), var(--color-secondary-400));
+    transition: width 0.5s ease;
+    border-radius: 0 2px 2px 0;
+}
+
+.deepdive-progress-phases {
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10%;
+}
+
+.deepdive-progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-full);
+    background: var(--color-neutral-300);
+    border: 2px solid var(--color-neutral-0);
+    transition: all var(--transition-normal);
+}
+
+.deepdive-progress-dot.active {
+    background: var(--color-primary-500);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+/* --- チャットエリア --- */
+.deepdive-chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-5);
+    -webkit-overflow-scrolling: touch;
+}
+
+.deepdive-chat-messages {
+    display: flex;
+    flex-direction: column;
+    max-width: 720px;
+    margin: 0 auto;
+    gap: var(--space-2);
+}
+
+/* --- タイピングインジケーター --- */
+.deepdive-typing {
+    display: flex;
+    gap: 4px;
+    padding: var(--space-3) var(--space-5) !important;
+    min-height: auto !important;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-neutral-400);
+    animation: typingBounce 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+}
+
+/* --- 入力エリア（画面下部固定） --- */
+.deepdive-input-area {
+    flex-shrink: 0;
+    padding: var(--space-4) var(--space-5);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--color-neutral-200);
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* --- ルート選択カード --- */
+.deepdive-route-select {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.deepdive-route-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-5) var(--space-3);
+    background: var(--color-neutral-0);
+    border: 2px solid var(--color-neutral-200);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    text-align: center;
+}
+
+.deepdive-route-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: currentColor;
+}
+
+.deepdive-route-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.deepdive-route-label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-800);
+}
+
+.deepdive-route-desc {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+    line-height: var(--line-height-normal);
+}
+
+/* --- 選択肢エリア --- */
+.deepdive-choices-wrapper {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* --- 自由記述エリア --- */
+.deepdive-freetext-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.deepdive-freetext-prompt {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);
+    line-height: var(--line-height-loose);
+}
+
+.deepdive-freetext-input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-neutral-200);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    line-height: var(--line-height-loose);
+    resize: vertical;
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.deepdive-freetext-input:focus {
+    border-color: var(--color-primary-400);
+    box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
+}
+
+.deepdive-freetext-input::placeholder {
+    color: var(--color-neutral-400);
+}
+
+.deepdive-freetext-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+}
+
+.deepdive-freetext-skip {
+    padding: var(--space-2) var(--space-5);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-neutral-500);
+    background: transparent;
+    border: 1px solid var(--color-neutral-300);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.deepdive-freetext-skip:hover {
+    background: var(--color-neutral-100);
+}
+
+.deepdive-freetext-submit {
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-0);
+    background: var(--color-primary-500);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.deepdive-freetext-submit:hover:not(:disabled) {
+    background: var(--color-primary-600);
+    transform: translateY(-1px);
+}
+
+.deepdive-freetext-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* --- フィーチャーUI（深掘りターンの自由記述ハイライト） --- */
+.deepdive-freetext-featured {
+    background: linear-gradient(
+        135deg,
+        rgba(33, 150, 243, 0.04) 0%,
+        rgba(0, 178, 95, 0.04) 100%
+    );
+    border: 2px solid var(--color-primary-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    animation: featureGlow 0.6s ease-out;
+}
+
+.deepdive-freetext-featured .deepdive-freetext-input {
+    border-color: var(--color-primary-300);
+    min-height: 100px;
+    font-size: var(--font-size-md);
+}
+
+.deepdive-freetext-spotlight {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-600);
+    text-align: center;
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-primary-100);
+    animation: spotlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes featureGlow {
+    0% {
+        opacity: 0;
+        transform: scale(0.97);
+        box-shadow: none;
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(33, 150, 243, 0.15);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(33, 150, 243, 0);
+    }
+}
+
+@keyframes spotlightPulse {
+    0%, 100% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- レスポンシブ --- */
+@media (max-width: 768px) {
+    .deepdive-header {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .deepdive-chat-area {
+        padding: var(--space-3);
+    }
+
+    .deepdive-input-area {
+        padding: var(--space-3);
+    }
+
+    .deepdive-route-select {
+        grid-template-columns: 1fr;
+    }
+
+    .deepdive-route-card {
+        flex-direction: row;
+        text-align: left;
+        padding: var(--space-4);
+    }
+
+    .deepdive-route-icon {
+        font-size: 1.5rem;
+    }
+
+    .deepdive-freetext-featured {
+        padding: var(--space-4);
+    }
+}
+
+@media (max-width: 480px) {
+    .deepdive-title {
+        font-size: var(--font-size-sm);
+    }
+
+    .deepdive-phase-label {
+        font-size: 10px;
+    }
+}

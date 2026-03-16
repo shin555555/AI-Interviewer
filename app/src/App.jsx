@@ -2,12 +2,14 @@ import { useState } from 'react'
 import InterviewScreen from './components/Interview/InterviewScreen'
 import ResultScreen from './components/Result/ResultScreen'
 import AdminDashboard from './components/Admin/AdminDashboard'
+import DeepDiveScreen from './components/DeepDive/DeepDiveScreen'
+import DeepDiveResultScreen from './components/DeepDive/DeepDiveResultScreen'
 import './App.css'
 
 /**
  * App - ルートコンポーネント
  * 画面の状態を管理し、各画面を切り替える。
- * 'welcome' | 'interview' | 'complete' | 'admin'
+ * 'welcome' | 'interview' | 'complete' | 'admin' | 'deepdive' | 'deepdive_result'
  */
 function App() {
   const [screen, setScreen] = useState('welcome')
@@ -16,10 +18,18 @@ function App() {
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState(false)
   const [showNameInput, setShowNameInput] = useState(false)
+  const [nameInputTarget, setNameInputTarget] = useState('interview') // 'interview' | 'deepdive'
   const [userName, setUserName] = useState('')
   const [nameError, setNameError] = useState(false)
+  const [deepDiveResult, setDeepDiveResult] = useState(null)
 
   const handleStartInterview = () => {
+    setNameInputTarget('interview')
+    setShowNameInput(true)
+  }
+
+  const handleStartDeepDive = () => {
+    setNameInputTarget('deepdive')
     setShowNameInput(true)
   }
 
@@ -28,7 +38,7 @@ function App() {
       setNameError(true)
       return
     }
-    setScreen('interview')
+    setScreen(nameInputTarget)
     setShowNameInput(false)
     setNameError(false)
   }
@@ -66,6 +76,33 @@ function App() {
     }} />
   }
 
+  // --- 深掘り対話モード ---
+  if (screen === 'deepdive') {
+    return <DeepDiveScreen
+      userName={userName.trim()}
+      onComplete={(data) => {
+        setDeepDiveResult(data)
+        setScreen('deepdive_result')
+      }}
+      onBack={() => {
+        setScreen('welcome')
+        setUserName('')
+      }}
+    />
+  }
+
+  // --- 深掘り対話モード 結果画面 ---
+  if (screen === 'deepdive_result' && deepDiveResult) {
+    return <DeepDiveResultScreen
+      data={deepDiveResult}
+      onBack={() => {
+        setScreen('welcome')
+        setDeepDiveResult(null)
+        setUserName('')
+      }}
+    />
+  }
+
   // --- 管理ダッシュボード ---
   if (screen === 'admin') {
     return <AdminDashboard onBack={() => setScreen('welcome')} />
@@ -85,13 +122,22 @@ function App() {
           <p className="welcome-text">
             AIとの対話を通じて、あなたの強みを発見しましょう。
           </p>
-          <button
-            className="btn btn-primary"
-            onClick={handleStartInterview}
-            id="start-interview-btn"
-          >
-            インタビューをはじめる
-          </button>
+          <div className="welcome-buttons">
+            <button
+              className="btn btn-primary"
+              onClick={handleStartInterview}
+              id="start-interview-btn"
+            >
+              適職診断をはじめる
+            </button>
+            <button
+              className="btn btn-deepdive"
+              onClick={handleStartDeepDive}
+              id="start-deepdive-btn"
+            >
+              深掘り対話をはじめる
+            </button>
+          </div>
 
           {showNameInput && (
             <div className="admin-login-overlay" onClick={() => setShowNameInput(false)}>

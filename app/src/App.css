@@ -109,6 +109,31 @@
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.30);
 }
 
+.welcome-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+}
+
+.btn-deepdive {
+  background: linear-gradient(135deg, #7B9ACC 0%, #6B8ABB 100%);
+  color: var(--color-neutral-0);
+  box-shadow: 0 4px 14px rgba(107, 138, 187, 0.35);
+}
+
+.btn-deepdive:hover {
+  background: linear-gradient(135deg, #8BAAD9 0%, #7B9ACC 100%);
+  box-shadow: 0 6px 20px rgba(107, 138, 187, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-deepdive:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(107, 138, 187, 0.30);
+}
+
 .btn-admin {
   margin-top: var(--space-4);
   background: transparent;
