@@ -38,6 +38,10 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
 
     const chatEndRef = useRef(null)
     const freetextRef = useRef(null)
+    const keywordsRef = useRef([])  // stale closure回避用: 常に最新のkeywordsを参照
+
+    // keywordsが更新されるたびにrefを同期
+    useEffect(() => { keywordsRef.current = keywords }, [keywords])
 
     // --- 自動スクロール ---
     const scrollToBottom = useCallback(() => {
@@ -102,13 +106,13 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
     }
 
     // --- 新しいターンを開始 ---
+    // keywordsRef を参照することで、stale closure による1ターン遅れを防ぐ
     const startTurn = useCallback((turnNum, rId = null) => {
         const route = rId || actualRouteId
         const phase = getPhaseForTurn(turnNum)
         const question = selectQuestion(route, phase.id, usedQuestionIds)
 
         if (!question) {
-            // 質問が見つからない場合はサマリーフェーズへ
             finishSession(route)
             return
         }
@@ -119,8 +123,8 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         setShowFreetext(false)
         setFreetextValue('')
 
-        // テンプレート変数を解決してAIメッセージを追加
-        const latestKeyword = keywords.length > 0 ? keywords[keywords.length - 1] : 'そのこと'
+        const kw = keywordsRef.current
+        const latestKeyword = kw.length > 0 ? kw[kw.length - 1] : 'そのこと'
         const topStrength = findTopStrength()
 
         const text = fillTemplate(question.text, {
@@ -130,7 +134,7 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         })
 
         addAIMessage(text, turnNum === 1 ? 1200 : 900)
-    }, [actualRouteId, usedQuestionIds, keywords, userName, addAIMessage]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [actualRouteId, usedQuestionIds, userName, addAIMessage]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // --- 蓄積タグから最も多い強みラベルを取得 ---
     const findTopStrength = () => {
@@ -153,8 +157,10 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         const newTags = [...accumulatedTags, ...(choice.tags || [])]
         setAccumulatedTags(newTags)
 
-        // キーワード記録
-        setKeywords(prev => [...prev, choice.label])
+        // キーワード記録（refも即時更新してstale closure回避）
+        const newKeyword = choice.label
+        setKeywords(prev => [...prev, newKeyword])
+        keywordsRef.current = [...keywordsRef.current, newKeyword]
 
         // 自由記述を表示
         if (currentQuestion.freetext) {
@@ -169,8 +175,10 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
     // --- 自由記述の送信ハンドラ ---
     const handleFreetextSubmit = () => {
         if (freetextValue.trim()) {
-            addUserMessage(freetextValue.trim())
-            setKeywords(prev => [...prev, freetextValue.trim()])
+            const newKeyword = freetextValue.trim()
+            addUserMessage(newKeyword)
+            setKeywords(prev => [...prev, newKeyword])
+            keywordsRef.current = [...keywordsRef.current, newKeyword]
         }
         setShowFreetext(false)
         setFreetextValue('')
@@ -220,7 +228,8 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         if (blockType) {
             const block = findBestBlock(blockType, tags)
             if (block) {
-                const latestKeyword = keywords.length > 0 ? keywords[keywords.length - 1] : 'そのこと'
+                const kw = keywordsRef.current
+                const latestKeyword = kw.length > 0 ? kw[kw.length - 1] : 'そのこと'
                 const text = fillTemplate(block.text, {
                     userName,
                     keyword: latestKeyword,

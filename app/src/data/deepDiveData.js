@@ -988,7 +988,7 @@ export const ADVOCACY_TEMPLATES = [
     },
     {
         matchTags: ['anxious', 'careful'],
-        title: '見通しの共有',
+        title: '先の見通しを伝える',
         forStaff: '[userName]さんは、先が見えない状況で不安を感じやすいです。ただし、それはリスクを事前に察知できる強みの裏返しです。',
         suggestion: '作業の全体像やゴールを最初に伝えると、安心して取り組めます。「ここまでで大丈夫」という声かけも効果的です。',
     },
@@ -1000,7 +1000,7 @@ export const ADVOCACY_TEMPLATES = [
     },
     {
         matchTags: ['perfectionist', 'detail_oriented'],
-        title: '完了基準の明示',
+        title: 'ゴールの伝え方',
         forStaff: '[userName]さんは、品質へのこだわりが強く、「まだ足りない」と自分を追い込みがちな面があります。',
         suggestion: '「ここまでで合格ライン」を具体的に伝えると、区切りをつけやすくなります。成果を具体的に褒めると自信につながります。',
     },

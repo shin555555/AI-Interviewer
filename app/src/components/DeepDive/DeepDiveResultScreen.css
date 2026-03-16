@@ -233,25 +233,51 @@
     margin: var(--space-10) auto 0;
     padding: 0 var(--space-5);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
 }
 
-.ddresult-back-btn {
+.ddresult-pdf-btn {
     padding: var(--space-4) var(--space-10);
     border-radius: var(--radius-xl);
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
     color: var(--color-neutral-0);
-    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+    background: linear-gradient(135deg, var(--color-secondary-500) 0%, var(--color-secondary-600) 100%);
     border: none;
     cursor: pointer;
     transition: all var(--transition-normal);
-    box-shadow: 0 4px 14px rgba(33, 150, 243, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 178, 95, 0.35);
+}
+
+.ddresult-pdf-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--color-secondary-400) 0%, var(--color-secondary-500) 100%);
+    box-shadow: 0 6px 20px rgba(0, 178, 95, 0.45);
+    transform: translateY(-2px);
+}
+
+.ddresult-pdf-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ddresult-back-btn {
+    padding: var(--space-3) var(--space-8);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-neutral-500);
+    background: transparent;
+    border: 1px solid var(--color-neutral-300);
+    cursor: pointer;
+    transition: all var(--transition-normal);
 }
 
 .ddresult-back-btn:hover {
-    background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-500) 100%);
-    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
-    transform: translateY(-2px);
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-700);
 }
 
 /* --- アニメーション --- */
