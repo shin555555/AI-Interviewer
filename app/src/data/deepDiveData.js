@@ -279,13 +279,10 @@ export const QUESTION_POOLS = {
             {
                 id: 'moya_sm_01',
                 phase: 'phase5_summary',
-                text: '今日はたくさんお話しいただき、ありがとうございました。\n\n[userName]さんとの対話を通じて見えてきたことを、「私のトリセツ」としてまとめてみました。\n\nこの内容について、付け加えたいことや直したいところはありますか？',
+                text: '今日はたくさんお話しいただき、ありがとうございました。\n\n[userName]さんとの対話を通じて見えてきたことを、「私のトリセツ」としてまとめました。\n結果を見てみましょう。',
                 choices: [
-                    { label: 'このままで大丈夫', tags: [] },
-                    { label: '少し直したいところがある', tags: [] },
-                    { label: 'もう少し話したいことがある', tags: [] },
+                    { label: '結果を見る', tags: [] },
                 ],
-                freetext: '付け加えたいことがあれば、自由に書いてください',
             },
         ],
     },
@@ -444,13 +441,10 @@ export const QUESTION_POOLS = {
             {
                 id: 'deki_sm_01',
                 phase: 'phase5_summary',
-                text: '今日はたくさんの「できたこと」を一緒に見つけることができました。ありがとうございます。\n\n[userName]さんの強みと、今日見つけた「できたこと」をまとめた「私のトリセツ」を作成しました。\n\nこの内容はいかがですか？',
+                text: '今日はたくさんの「できたこと」を一緒に見つけることができました。ありがとうございます。\n\n[userName]さんの強みと、今日見つけた「できたこと」をまとめました。\n結果を見てみましょう。',
                 choices: [
-                    { label: 'このままで大丈夫', tags: [] },
-                    { label: '少し直したいところがある', tags: [] },
-                    { label: 'もう少し話したいことがある', tags: [] },
+                    { label: '結果を見る', tags: [] },
                 ],
-                freetext: '付け加えたいことがあれば、自由に書いてください',
             },
         ],
     },
@@ -597,13 +591,10 @@ export const QUESTION_POOLS = {
             {
                 id: 'tori_sm_01',
                 phase: 'phase5_summary',
-                text: '今日は一緒に[userName]さんの「トリセツ」を作ることができました。ありがとうございます。\n\n得意なこと、苦手なこと、心地よい環境、そしてサポートのお願い。\nこの4つの柱でまとめた「私のトリセツ」ができあがりました。\n\nこの内容はいかがですか？',
+                text: '今日は一緒に[userName]さんの「トリセツ」を作ることができました。ありがとうございます。\n\n得意なこと、苦手なこと、心地よい環境、そしてサポートのお願い。\nこの4つの柱でまとめました。\n結果を見てみましょう。',
                 choices: [
-                    { label: 'このままで大丈夫', tags: [] },
-                    { label: '少し直したいところがある', tags: [] },
-                    { label: 'もう少し話したいことがある', tags: [] },
+                    { label: '結果を見る', tags: [] },
                 ],
-                freetext: '修正や追加があれば、自由に書いてください',
             },
         ],
     },
@@ -1030,11 +1021,7 @@ export const ADVOCACY_TEMPLATES = [
  * @returns {Object|null} 質問オブジェクト or null
  */
 export function selectQuestion(routeId, phaseId, excludeIds = []) {
-    const route = routeId === 'omakase'
-        ? ['moyamoya', 'dekitakoto', 'torisetsu'][Math.floor(Math.random() * 3)]
-        : routeId
-
-    const pool = QUESTION_POOLS[route]?.[phaseId]
+    const pool = QUESTION_POOLS[routeId]?.[phaseId]
     if (!pool || pool.length === 0) return null
 
     const candidates = pool.filter(q => !excludeIds.includes(q.id))
@@ -1130,7 +1117,22 @@ export function generateAdvocacyCards(accumulatedTags, vars = {}) {
 export function findReframings(accumulatedTags) {
     return REFRAMING_DICT
         .filter(r => accumulatedTags.includes(r.strengthTag))
+        .sort((a, b) => {
+            const countA = accumulatedTags.filter(t => t === a.strengthTag).length
+            const countB = accumulatedTags.filter(t => t === b.strengthTag).length
+            return countB - countA
+        })
         .slice(0, 3)
+}
+
+/**
+ * 蓄積タグに基づいてリフレーミングテキストを1つ取得する
+ * （対話中の [reframing] 変数用）
+ */
+export function getReframingText(accumulatedTags) {
+    const matched = findReframings(accumulatedTags)
+    if (matched.length === 0) return 'あなたらしい強み'
+    return matched[0].positive
 }
 
 /**

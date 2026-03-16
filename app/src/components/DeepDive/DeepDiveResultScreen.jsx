@@ -9,7 +9,7 @@ import './DeepDiveResultScreen.css'
  * 「私のトリセツ」「強みの見つけ方カード」「支援員さんへのお願いシート」を表示する。
  */
 export default function DeepDiveResultScreen({ data, onBack }) {
-    const { userName, torisetsu, advocacyCards, reframings, accumulatedTags } = data
+    const { userName, torisetsu, advocacyCards, reframings, accumulatedTags, keywords } = data
     const pdfContentRef = useRef(null)
     const [isPdfGenerating, setIsPdfGenerating] = useState(false)
 
@@ -97,7 +97,22 @@ export default function DeepDiveResultScreen({ data, onBack }) {
                     )}
                 </section>
 
-                {/* セクション3: 強みの見つけ方カード */}
+                {/* セクション3: できた！の発見レポート */}
+                {keywords && keywords.length > 0 && (
+                    <section className="ddresult-section ddresult-smallwin">
+                        <h2 className="ddresult-section-title">できた！の発見レポート</h2>
+                        <p className="ddresult-smallwin-intro">
+                            今日の対話で見つかった、{userName}さんの「できたこと」です。
+                        </p>
+                        <ul className="ddresult-block-list">
+                            {keywords.slice(0, 6).map((kw, i) => (
+                                <li key={i}>{kw}</li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
+                {/* セクション4: 強みの見つけ方カード */}
                 {reframings.length > 0 && (
                     <section className="ddresult-section ddresult-reframing">
                         <h2 className="ddresult-section-title">「苦手」を「強み」に変えるカード</h2>

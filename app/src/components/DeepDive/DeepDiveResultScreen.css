@@ -54,6 +54,7 @@
 .ddresult-section:nth-child(2) { animation-delay: 0.1s; }
 .ddresult-section:nth-child(3) { animation-delay: 0.2s; }
 .ddresult-section:nth-child(4) { animation-delay: 0.3s; }
+.ddresult-section:nth-child(5) { animation-delay: 0.4s; }
 
 .ddresult-section-title {
     font-size: var(--font-size-lg);
@@ -140,6 +141,14 @@
     height: 8px;
     border-radius: var(--radius-full);
     background: var(--color-secondary-400);
+}
+
+/* --- できた！の発見レポート --- */
+.ddresult-smallwin-intro {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);
+    margin-bottom: var(--space-4);
+    line-height: var(--line-height-loose);
 }
 
 /* --- リフレーミングカード --- */
@@ -278,18 +287,6 @@
 .ddresult-back-btn:hover {
     background: var(--color-neutral-100);
     color: var(--color-neutral-700);
-}
-
-/* --- アニメーション --- */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* --- レスポンシブ --- */

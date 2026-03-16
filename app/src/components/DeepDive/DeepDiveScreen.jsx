@@ -11,6 +11,7 @@ import {
     generateTorisetsu,
     generateAdvocacyCards,
     findReframings,
+    getReframingText,
     getPhaseForTurn,
 } from '../../data/deepDiveData'
 import './DeepDiveScreen.css'
@@ -21,6 +22,8 @@ import './DeepDiveScreen.css'
  * チャット形式のUI。約10ターンの対話を通じて
  * 利用者の強みを発見し、「私のトリセツ」を生成する。
  */
+const STORAGE_KEY = 'deepdive_session'
+
 export default function DeepDiveScreen({ userName, onComplete, onBack }) {
     // --- 状態管理 ---
     const [routeId, setRouteId] = useState(null)           // 選択されたルートID
@@ -38,10 +41,58 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
 
     const chatEndRef = useRef(null)
     const freetextRef = useRef(null)
-    const keywordsRef = useRef([])  // stale closure回避用: 常に最新のkeywordsを参照
+    const keywordsRef = useRef([])           // stale closure回避用
+    const accumulatedTagsRef = useRef([])    // stale closure回避用
+    const usedQuestionIdsRef = useRef([])    // stale closure回避用
 
-    // keywordsが更新されるたびにrefを同期
+    // state更新時にrefを同期
     useEffect(() => { keywordsRef.current = keywords }, [keywords])
+    useEffect(() => { accumulatedTagsRef.current = accumulatedTags }, [accumulatedTags])
+    useEffect(() => { usedQuestionIdsRef.current = usedQuestionIds }, [usedQuestionIds])
+
+    // --- LocalStorageからのセッション復元 ---
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY)
+            if (!saved) return
+            const s = JSON.parse(saved)
+            if (s.userName !== userName) {
+                localStorage.removeItem(STORAGE_KEY)
+                return
+            }
+            setRouteId(s.routeId)
+            setActualRouteId(s.actualRouteId)
+            setTurn(s.turn)
+            setMessages(s.messages)
+            setAccumulatedTags(s.accumulatedTags)
+            accumulatedTagsRef.current = s.accumulatedTags
+            setKeywords(s.keywords)
+            keywordsRef.current = s.keywords
+            setUsedQuestionIds(s.usedQuestionIds)
+            usedQuestionIdsRef.current = s.usedQuestionIds
+            if (s.sessionComplete) {
+                setSessionComplete(true)
+                // 復元時にサマリー質問を再設定
+                const summaryQ = selectQuestion(s.actualRouteId, 'phase5_summary', [])
+                if (summaryQ) setCurrentQuestion(summaryQ)
+            } else if (s.turn > 0) {
+                // 次のターンの質問を再設定
+                const phase = getPhaseForTurn(s.turn)
+                const q = selectQuestion(s.actualRouteId, phase.id, s.usedQuestionIds)
+                if (q) setCurrentQuestion(q)
+            }
+        } catch { /* 破損データは無視 */ }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // --- セッション状態をLocalStorageに保存 ---
+    useEffect(() => {
+        if (turn === 0 && messages.length <= 1) return // 初期状態は保存しない
+        const session = {
+            userName, routeId, actualRouteId, turn, messages,
+            accumulatedTags, keywords, usedQuestionIds, sessionComplete,
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
+    }, [userName, routeId, actualRouteId, turn, messages, accumulatedTags, keywords, usedQuestionIds, sessionComplete])
 
     // --- 自動スクロール ---
     const scrollToBottom = useCallback(() => {
@@ -105,12 +156,23 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         startTurn(1, resolvedRoute)
     }
 
+    // --- 蓄積タグから最も多い強みラベルを取得（ref使用） ---
+    const findTopStrength = useCallback(() => {
+        const tags = accumulatedTagsRef.current
+        const strengthTags = tags.filter(t => TAGS[t]?.category === 'strength')
+        if (strengthTags.length === 0) return '前向きに取り組む力'
+        const counts = {}
+        strengthTags.forEach(t => { counts[t] = (counts[t] || 0) + 1 })
+        const topTag = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
+        return TAGS[topTag]?.label || '前向きに取り組む力'
+    }, [])
+
     // --- 新しいターンを開始 ---
-    // keywordsRef を参照することで、stale closure による1ターン遅れを防ぐ
+    // ref を参照することで、stale closure による1ターン遅れを防ぐ
     const startTurn = useCallback((turnNum, rId = null) => {
         const route = rId || actualRouteId
         const phase = getPhaseForTurn(turnNum)
-        const question = selectQuestion(route, phase.id, usedQuestionIds)
+        const question = selectQuestion(route, phase.id, usedQuestionIdsRef.current)
 
         if (!question) {
             finishSession(route)
@@ -119,6 +181,7 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
 
         setTurn(turnNum)
         setUsedQuestionIds(prev => [...prev, question.id])
+        usedQuestionIdsRef.current = [...usedQuestionIdsRef.current, question.id]
         setCurrentQuestion(question)
         setShowFreetext(false)
         setFreetextValue('')
@@ -126,25 +189,17 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         const kw = keywordsRef.current
         const latestKeyword = kw.length > 0 ? kw[kw.length - 1] : 'そのこと'
         const topStrength = findTopStrength()
+        const reframingText = getReframingText(accumulatedTagsRef.current)
 
         const text = fillTemplate(question.text, {
             userName,
             keyword: latestKeyword,
             strengthLabel: topStrength,
+            reframing: reframingText,
         })
 
         addAIMessage(text, turnNum === 1 ? 1200 : 900)
-    }, [actualRouteId, usedQuestionIds, userName, addAIMessage]) // eslint-disable-line react-hooks/exhaustive-deps
-
-    // --- 蓄積タグから最も多い強みラベルを取得 ---
-    const findTopStrength = () => {
-        const strengthTags = accumulatedTags.filter(t => TAGS[t]?.category === 'strength')
-        if (strengthTags.length === 0) return '前向きに取り組む力'
-        const counts = {}
-        strengthTags.forEach(t => { counts[t] = (counts[t] || 0) + 1 })
-        const topTag = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]
-        return TAGS[topTag]?.label || '前向きに取り組む力'
-    }
+    }, [actualRouteId, userName, addAIMessage, findTopStrength]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // --- 選択肢の確定ハンドラ ---
     const handleChoiceConfirm = async (choiceIndex) => {
@@ -153,9 +208,10 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         const choice = currentQuestion.choices[choiceIndex]
         addUserMessage(choice.label)
 
-        // タグ蓄積
-        const newTags = [...accumulatedTags, ...(choice.tags || [])]
+        // タグ蓄積（refも即時更新してstale closure回避）
+        const newTags = [...accumulatedTagsRef.current, ...(choice.tags || [])]
         setAccumulatedTags(newTags)
+        accumulatedTagsRef.current = newTags
 
         // キーワード記録（refも即時更新してstale closure回避）
         const newKeyword = choice.label
@@ -262,6 +318,9 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
             addUserMessage(choice.label)
         }
 
+        // セッションデータをクリア
+        localStorage.removeItem(STORAGE_KEY)
+
         // トリセツ・代弁カード・リフレーミングの生成
         const vars = { userName }
         const torisetsu = generateTorisetsu(accumulatedTags, vars)
@@ -289,7 +348,12 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         <div className="deepdive-screen">
             {/* ヘッダー */}
             <header className="deepdive-header">
-                <button className="deepdive-back-btn" onClick={onBack}>
+                <button className="deepdive-back-btn" onClick={() => {
+                    if (turn === 0 || window.confirm('対話の内容が失われますが、よろしいですか？')) {
+                        localStorage.removeItem(STORAGE_KEY)
+                        onBack()
+                    }
+                }}>
                     戻る
                 </button>
                 <div className="deepdive-header-center">
@@ -305,7 +369,7 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
 
             {/* プログレスバー */}
             {turn > 0 && (
-                <div className="deepdive-progress-bar">
+                <div className="deepdive-progress-bar" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="対話の進み具合">
                     <div
                         className="deepdive-progress-fill"
                         style={{ width: `${progress}%` }}
@@ -327,7 +391,7 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
             )}
 
             {/* チャットエリア */}
-            <div className="deepdive-chat-area">
+            <div className="deepdive-chat-area" role="log" aria-label="対話履歴" aria-live="polite">
                 <div className="deepdive-chat-messages">
                     {messages.map((msg, i) => (
                         <ChatBubble key={i} type={msg.type} text={msg.text} />
@@ -337,7 +401,7 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
                     {isTyping && (
                         <div className="bubble-row bubble-row-system">
                             <div className="bubble-avatar">🤖</div>
-                            <div className="bubble bubble-system deepdive-typing">
+                            <div className="bubble bubble-system deepdive-typing" aria-label="入力中">
                                 <span className="typing-dot" />
                                 <span className="typing-dot" />
                                 <span className="typing-dot" />
