@@ -9,7 +9,10 @@ import './DeepDiveResultScreen.css'
  * 「私のトリセツ」「強みの見つけ方カード」「支援員さんへのお願いシート」を表示する。
  */
 export default function DeepDiveResultScreen({ data, onBack }) {
-    const { userName, torisetsu, advocacyCards, reframings, accumulatedTags, keywords } = data
+    const {
+        userName, torisetsu, advocacyCards, reframings, accumulatedTags,
+        deepAnalysis, profileNarrative, values, tensions, copingStrategies,
+    } = data
     const pdfContentRef = useRef(null)
     const [isPdfGenerating, setIsPdfGenerating] = useState(false)
 
@@ -59,7 +62,73 @@ export default function DeepDiveResultScreen({ data, onBack }) {
                     </div>
                 </section>
 
-                {/* セクション2: 私のトリセツ */}
+                {/* セクション2: 深層分析（対話から見えた深い傾向） */}
+                {deepAnalysis && deepAnalysis.length > 0 && (
+                    <section className="ddresult-section ddresult-deep-analysis">
+                        <h2 className="ddresult-section-title">対話から見えてきた、あなたの深い傾向</h2>
+                        <p className="ddresult-deep-analysis-intro">
+                            回答の組み合わせを分析し、表面的な回答だけでは見えない{userName}さんの傾向をまとめました。
+                        </p>
+                        <div className="ddresult-deep-analysis-cards">
+                            {deepAnalysis.map((pattern, i) => (
+                                <div key={i} className="ddresult-deep-analysis-card">
+                                    <h3 className="ddresult-deep-analysis-title">{pattern.title}</h3>
+                                    <p className="ddresult-deep-analysis-insight">{pattern.insight}</p>
+                                    <div className="ddresult-deep-analysis-deeper">
+                                        <span className="ddresult-deeper-label">その奥にあるもの</span>
+                                        <p className="ddresult-deeper-text">{pattern.deeperMeaning}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* セクション3: 動機・価値観 */}
+                {values && values.length > 0 && (
+                    <section className="ddresult-section ddresult-values">
+                        <h2 className="ddresult-section-title">{userName}さんを動かしているもの</h2>
+                        <p className="ddresult-values-intro">
+                            回答パターンから推定された、{userName}さんの根底にある動機と価値観です。
+                        </p>
+                        <div className="ddresult-values-cards">
+                            {values.map((v, i) => (
+                                <div key={i} className="ddresult-value-card">
+                                    <h3 className="ddresult-value-name">{v.name}</h3>
+                                    <p className="ddresult-value-description">{v.description}</p>
+                                    <div className="ddresult-value-psych">
+                                        <span className="ddresult-psych-label">心理学の知見</span>
+                                        <p className="ddresult-psych-note">{v.psychNote}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* セクション4: 内的な葛藤（あなたの中の対話） */}
+                {tensions && tensions.length > 0 && (
+                    <section className="ddresult-section ddresult-tensions">
+                        <h2 className="ddresult-section-title">あなたの中にある「二つの声」</h2>
+                        <p className="ddresult-tensions-intro">
+                            一見矛盾するように見える二つの傾向が見つかりました。これは弱さではなく、{userName}さんの心の「奥行き」を示しています。
+                        </p>
+                        <div className="ddresult-tensions-cards">
+                            {tensions.map((t, i) => (
+                                <div key={i} className="ddresult-tension-card">
+                                    <h3 className="ddresult-tension-title">{t.title}</h3>
+                                    <p className="ddresult-tension-analysis">{t.analysis}</p>
+                                    <div className="ddresult-tension-advice">
+                                        <strong>この葛藤との付き合い方:</strong>
+                                        <p>{t.advice}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* セクション5: 私のトリセツ */}
                 <section className="ddresult-section ddresult-torisetsu">
                     <h2 className="ddresult-section-title">私のトリセツ（取りあつかい説明書）</h2>
 
@@ -97,22 +166,40 @@ export default function DeepDiveResultScreen({ data, onBack }) {
                     )}
                 </section>
 
-                {/* セクション3: できた！の発見レポート */}
-                {keywords && keywords.length > 0 && (
-                    <section className="ddresult-section ddresult-smallwin">
-                        <h2 className="ddresult-section-title">できた！の発見レポート</h2>
-                        <p className="ddresult-smallwin-intro">
-                            今日の対話で見つかった、{userName}さんの「できたこと」です。
+                {/* セクション6: 対処法アドバイス */}
+                {copingStrategies && copingStrategies.length > 0 && (
+                    <section className="ddresult-section ddresult-coping">
+                        <h2 className="ddresult-section-title">つらいときの対処法ガイド</h2>
+                        <p className="ddresult-coping-intro">
+                            {userName}さんの特徴に合わせた、心理学にもとづく具体的な対処法です。
                         </p>
-                        <ul className="ddresult-block-list">
-                            {keywords.slice(0, 6).map((kw, i) => (
-                                <li key={i}>{kw}</li>
+                        <div className="ddresult-coping-cards">
+                            {copingStrategies.map((s, i) => (
+                                <div key={i} className="ddresult-coping-card">
+                                    <h3 className="ddresult-coping-technique">{s.technique}</h3>
+                                    <p className="ddresult-coping-when">
+                                        <strong>こんなときに:</strong> {s.whenToUse}
+                                    </p>
+                                    <p className="ddresult-coping-description">{s.description}</p>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     </section>
                 )}
 
-                {/* セクション4: 強みの見つけ方カード */}
+                {/* セクション7: あなたのプロファイル */}
+                {profileNarrative && (
+                    <section className="ddresult-section ddresult-narrative">
+                        <h2 className="ddresult-section-title">{userName}さんの全体像</h2>
+                        <div className="ddresult-narrative-text">
+                            {profileNarrative.split('\n\n').map((paragraph, i) => (
+                                <p key={i}>{paragraph}</p>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* セクション8: 強みの見つけ方カード */}
                 {reframings.length > 0 && (
                     <section className="ddresult-section ddresult-reframing">
                         <h2 className="ddresult-section-title">「苦手」を「強み」に変えるカード</h2>
@@ -134,7 +221,7 @@ export default function DeepDiveResultScreen({ data, onBack }) {
                     </section>
                 )}
 
-                {/* セクション4: 支援員さんへのお願いシート */}
+                {/* セクション9: 支援員さんへのお願いシート */}
                 {advocacyCards.length > 0 && (
                     <section className="ddresult-section ddresult-advocacy">
                         <h2 className="ddresult-section-title">支援員さんへのお願いシート</h2>

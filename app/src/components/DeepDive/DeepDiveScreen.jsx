@@ -13,6 +13,11 @@ import {
     findReframings,
     getReframingText,
     getPhaseForTurn,
+    generateDeepAnalysis,
+    generateProfileNarrative,
+    inferValues,
+    detectTensions,
+    matchCopingStrategies,
 } from '../../data/deepDiveData'
 import './DeepDiveScreen.css'
 
@@ -143,6 +148,13 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
             : route.id
         setActualRouteId(resolvedRoute)
 
+        // ルート別の自然な遷移メッセージ
+        const transitions = {
+            moyamoya: 'いいですね。最近のモヤモヤについて、一緒に整理していきましょう。',
+            dekitakoto: 'いいですね。最近の「できたこと」を一緒に見つけていきましょう。',
+            torisetsu: 'いいですね。自分のトリセツ、一緒に作っていきましょう。',
+        }
+
         if (route.id === 'omakase') {
             const routeLabels = {
                 moyamoya: 'モヤモヤを話してみる',
@@ -150,6 +162,8 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
                 torisetsu: '自分のトリセツを作る',
             }
             await addAIMessage(`いいですね。今日は「${routeLabels[resolvedRoute]}」をテーマにしましょう。`, 600)
+        } else {
+            await addAIMessage(transitions[resolvedRoute], 600)
         }
 
         // ターン1の質問を開始
@@ -321,11 +335,16 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
         // セッションデータをクリア
         localStorage.removeItem(STORAGE_KEY)
 
-        // トリセツ・代弁カード・リフレーミングの生成
+        // トリセツ・代弁カード・リフレーミング・深層分析の生成
         const vars = { userName }
         const torisetsu = generateTorisetsu(accumulatedTags, vars)
         const advocacyCards = generateAdvocacyCards(accumulatedTags, vars)
         const reframings = findReframings(accumulatedTags)
+        const deepAnalysis = generateDeepAnalysis(accumulatedTags, keywords, vars)
+        const profileNarrative = generateProfileNarrative(accumulatedTags, keywords, vars)
+        const values = inferValues(accumulatedTags)
+        const tensions = detectTensions(accumulatedTags)
+        const copingStrategies = matchCopingStrategies(accumulatedTags)
 
         onComplete({
             userName,
@@ -336,6 +355,11 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
             torisetsu,
             advocacyCards,
             reframings,
+            deepAnalysis,
+            profileNarrative,
+            values,
+            tensions,
+            copingStrategies,
         })
     }
 
