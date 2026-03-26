@@ -467,13 +467,16 @@ export default function DeepDiveScreen({ userName, onComplete, onBack }) {
                     </div>
                 )}
 
-                {/* セッション完了時の選択肢 */}
-                {sessionComplete && currentQuestion && !isTyping && !showFreetext && (
+                {/* セッション完了時：1クリックで結果画面へ */}
+                {sessionComplete && !isTyping && (
                     <div className="deepdive-choices-wrapper">
-                        <ChoiceButtons
-                            choices={currentQuestion.choices}
-                            onConfirm={handleViewResults}
-                        />
+                        <button
+                            className="btn btn-primary deepdive-result-btn"
+                            onClick={() => handleViewResults(0)}
+                            id="view-result-btn"
+                        >
+                            結果を見る
+                        </button>
                     </div>
                 )}
 

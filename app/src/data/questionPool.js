@@ -1058,17 +1058,79 @@ export const QUESTION_POOL = [
 ]
 
 /**
- * AIの相槌メッセージ
+ * AIの相槌メッセージ（進捗段階別）
+ *
+ * 序盤（Q1-10）、中盤（Q11-25）、終盤（Q26-40）で
+ * メッセージのトーンを変え、自然な会話の流れを演出する。
  */
+const AI_RESPONSES_BY_STAGE = {
+    early: [
+        'ありがとうございます。いい調子です。',
+        'なるほど、教えてくれてありがとうございます。',
+        'そうなんですね。次もよろしくお願いします。',
+        '正直に答えてくれて嬉しいです。',
+        'わかりました。どんどんいきましょう。',
+        'いいペースですね。',
+        'ありがとうございます。続けていきましょう。',
+        'そうですか。次の質問にいきますね。',
+    ],
+    middle: [
+        'だんだん、あなたのことがわかってきました。',
+        'なるほど、興味深いですね。',
+        'ありがとうございます。もう少し聞かせてください。',
+        'いい感じに進んでいますね。',
+        'あなたらしさが見えてきました。',
+        '参考になります。ありがとうございます。',
+        'なるほど、そういう考え方なんですね。',
+        'よくわかりました。次にいきましょう。',
+        'おもしろいですね。もう少し続けましょう。',
+    ],
+    late: [
+        'もう少しで終わりです。がんばりましょう。',
+        'ありがとうございます。あと少しです。',
+        'いい答えですね。もうすぐ結果が出ますよ。',
+        'ここまでよく答えてくれました。',
+        'あなたのプロフィールが見えてきました。あと少しだけお願いします。',
+        'お疲れさまです。ラストスパートです。',
+        'ありがとうございます。もう少しだけお付き合いください。',
+        'よくわかりました。あと数問です。',
+    ],
+}
+
+/** 後方互換用：フラットな配列としてもエクスポート */
 export const AI_RESPONSES = [
-    '教えてくれてありがとうございます。',
-    'なるほど、よくわかりました。',
-    'そうなんですね。',
-    'ありがとうございます。次の質問です。',
-    'あなたのことが少しわかってきました。',
-    'いい答えですね。続けていきましょう。',
-    '正直に答えてくれて嬉しいです。',
+    ...AI_RESPONSES_BY_STAGE.early,
+    ...AI_RESPONSES_BY_STAGE.middle,
+    ...AI_RESPONSES_BY_STAGE.late,
 ]
+
+let _lastUsedResponse = ''
+
+/**
+ * 進捗に応じた相槌メッセージを選択する（直近と重複しない）
+ * @param {number} questionIndex - 現在の問題インデックス（0始まり）
+ * @param {number} totalQuestions - 全体の問題数
+ * @returns {string} 相槌メッセージ
+ */
+export function pickAIResponse(questionIndex, totalQuestions = 40) {
+    const progress = questionIndex / totalQuestions
+    let pool
+    if (progress < 0.25) {
+        pool = AI_RESPONSES_BY_STAGE.early
+    } else if (progress < 0.7) {
+        pool = AI_RESPONSES_BY_STAGE.middle
+    } else {
+        pool = AI_RESPONSES_BY_STAGE.late
+    }
+
+    // 直近のメッセージと重複しないように選ぶ（最大5回試行）
+    let chosen = pool[Math.floor(Math.random() * pool.length)]
+    for (let i = 0; i < 5 && chosen === _lastUsedResponse; i++) {
+        chosen = pool[Math.floor(Math.random() * pool.length)]
+    }
+    _lastUsedResponse = chosen
+    return chosen
+}
 
 /**
  * 4桁の再開コードを生成する

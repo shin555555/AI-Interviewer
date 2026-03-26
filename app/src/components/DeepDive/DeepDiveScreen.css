@@ -225,6 +225,28 @@
     animation: fadeInUp 0.3s ease-out;
 }
 
+.deepdive-result-btn {
+    width: 100%;
+    padding: var(--space-4) var(--space-6);
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-lg, 12px);
+    background: var(--color-primary, #2196F3);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.deepdive-result-btn:hover {
+    background: var(--color-primary-dark, #1976D2);
+    transform: translateY(-1px);
+}
+
+.deepdive-result-btn:active {
+    transform: translateY(0);
+}
+
 /* --- 自由記述エリア --- */
 .deepdive-freetext-area {
     display: flex;

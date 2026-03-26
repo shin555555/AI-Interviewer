@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { selectRandomQuestions, AI_RESPONSES, generateSessionCode } from '../../data/questionPool'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { selectRandomQuestions, pickAIResponse, generateSessionCode } from '../../data/questionPool'
 import { selectRandomExperienceQuestions } from '../../data/experiencePool'
 import ChatBubble from './ChatBubble'
 import ChoiceButtons from './ChoiceButtons'
@@ -19,11 +19,12 @@ const PART1_COUNT = 30
  */
 export default function InterviewScreen({ onComplete, userName = '' }) {
     // --- ランダム出題：第1部30問 + 第2部10問 ---
-    const QUESTIONS = useMemo(() => {
+    // state にすることで、再開時に保存済みの質問セットを復元可能にする
+    const [QUESTIONS, setQuestions] = useState(() => {
         const part1 = selectRandomQuestions(3)
         const part2 = selectRandomExperienceQuestions(2)
         return [...part1, ...part2]
-    }, [])
+    })
 
     // --- State ---
     const [sessionCode, setSessionCode] = useState('')
@@ -56,24 +57,19 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
     }, [])
 
     // --- LocalStorage復元 ---
+    // 自動復元は行わない。再開は「再開コード入力」経由のみ。
+    // LS にはデータを保持し続け、再開コード入力時に復元する。
     useEffect(() => {
+        // 完了済み or 別ユーザーのデータだけ掃除する
         const saved = localStorage.getItem(LS_KEY)
         if (saved) {
             try {
                 const data = JSON.parse(saved)
-                if (data.sessionCode) {
-                    setSessionCode(data.sessionCode)
-                    setStarted(data.started || false)
-                    setCurrentIndex(data.currentIndex || 0)
-                    setMessages(data.messages || [])
-                    setAnswers(data.answers || [])
-                    setWaitingForPart2Start(data.waitingForPart2Start || false)
-                    if (data.started && !data.waitingForPart2Start && data.currentIndex < QUESTIONS.length) {
-                        setWaitingForChoice(true)
-                    }
+                if (!data.sessionCode || (data.currentIndex || 0) >= (data.totalQuestions || 40)) {
+                    localStorage.removeItem(LS_KEY)
                 }
             } catch (e) {
-                console.warn('セッションデータの復元に失敗しました。', e)
+                localStorage.removeItem(LS_KEY)
             }
         }
     }, [])
@@ -81,7 +77,12 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
     // --- LocalStorage保存 ---
     useEffect(() => {
         if (sessionCode) {
-            const data = { sessionCode, started, currentIndex, messages, answers, userName, waitingForPart2Start }
+            const data = {
+                sessionCode, started, currentIndex, messages, answers,
+                userName, waitingForPart2Start,
+                questions: QUESTIONS,           // 再開時に同じ質問セットを使う
+                totalQuestions: QUESTIONS.length,
+            }
             localStorage.setItem(LS_KEY, JSON.stringify(data))
         }
     }, [sessionCode, started, currentIndex, messages, answers, userName, waitingForPart2Start])
@@ -131,6 +132,10 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
             try {
                 const data = JSON.parse(saved)
                 if (data.sessionCode === resumeCode) {
+                    // 保存済みの質問セットを復元（questionId の整合性を保つ）
+                    if (data.questions && data.questions.length > 0) {
+                        setQuestions(data.questions)
+                    }
                     setSessionCode(data.sessionCode)
                     setStarted(data.started || false)
                     setCurrentIndex(data.currentIndex || 0)
@@ -138,7 +143,8 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                     setAnswers(data.answers || [])
                     setShowResumeInput(false)
                     setWaitingForPart2Start(data.waitingForPart2Start || false)
-                    if (data.started && !data.waitingForPart2Start && data.currentIndex < QUESTIONS.length) {
+                    const totalQ = data.questions?.length || QUESTIONS.length
+                    if (data.started && !data.waitingForPart2Start && (data.currentIndex || 0) < totalQ) {
                         setWaitingForChoice(true)
                     }
                     return
@@ -248,6 +254,7 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                 setCurrentIndex(nextIndex)
                 scrollToBottom()
                 setTimeout(() => {
+                    localStorage.removeItem(LS_KEY)
                     if (onComplete) onComplete(newAnswers, userName)
                 }, 1500)
             }, 1000)
@@ -256,7 +263,7 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
 
         // 通常の次の質問
         setIsTyping(true)
-        const aiResponse = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)]
+        const aiResponse = pickAIResponse(currentIndex, QUESTIONS.length)
         setTimeout(() => {
             setMessages(prev => [...prev, { type: 'system', text: aiResponse }])
             scrollToBottom()
@@ -339,6 +346,57 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
 
         showNextQuestion(currentIndex + 1, newAnswers)
     }, [currentIndex, answers, supplementText, scrollToBottom, showNextQuestion])
+
+    // --- 1つ前の質問に戻る ---
+    const handleGoBack = useCallback(() => {
+        if (isTyping) return
+
+        let targetIndex
+        if (waitingForPart2Start) {
+            // 第2部トランジションから第1部最終問へ戻る
+            targetIndex = PART1_COUNT - 1
+        } else if (waitingForChoice && currentIndex > 0) {
+            targetIndex = currentIndex - 1
+        } else {
+            return
+        }
+
+        const targetQ = QUESTIONS[targetIndex]
+
+        // 戻り先の質問メッセージを messages 内から逆順で探す
+        let targetMsgIdx = -1
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].questionId === targetQ.id) {
+                targetMsgIdx = i
+                break
+            }
+        }
+        if (targetMsgIdx === -1) return
+
+        // メッセージを質問メッセージまで切り詰め（質問自体は残す）
+        setMessages(messages.slice(0, targetMsgIdx + 1))
+
+        // 最後の回答データを削除（レポート整合性の維持）
+        setAnswers(prev => prev.slice(0, -1))
+
+        // 状態を戻す
+        setCurrentIndex(targetIndex)
+        setWaitingForChoice(true)
+        setWaitingForPart2Start(false)
+        setSupplementText('')
+
+        // メタデータをリセット
+        questionShownAt.current = Date.now()
+        toggleCountRef.current = 0
+        selectedChoiceRef.current = null
+
+        scrollToBottom()
+    }, [currentIndex, messages, isTyping, waitingForChoice, waitingForPart2Start, scrollToBottom])
+
+    // 「戻る」ボタンの表示条件
+    const canGoBack = !isTyping && (
+        (waitingForChoice && currentIndex > 0) || waitingForPart2Start
+    )
 
     // --- 中断ボタン ---
     const handlePause = useCallback(() => {
@@ -506,7 +564,28 @@ export default function InterviewScreen({ onComplete, userName = '' }) {
                                 </button>
                             )}
                         </div>
+                        {canGoBack && (
+                            <button
+                                className="btn-go-back"
+                                onClick={handleGoBack}
+                                id="go-back-btn"
+                            >
+                                ← 前の質問に戻る
+                            </button>
+                        )}
                     </div>
+                )}
+
+                {/* 第2部トランジション中の戻るボタン */}
+                {waitingForPart2Start && canGoBack && (
+                    <button
+                        className="btn-go-back"
+                        onClick={handleGoBack}
+                        id="go-back-part2-btn"
+                        style={{ marginTop: 'var(--space-3)' }}
+                    >
+                        ← 前の質問に戻る
+                    </button>
                 )}
             </footer>
         </div>
