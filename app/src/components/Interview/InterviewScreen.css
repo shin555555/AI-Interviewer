@@ -1,15 +1,16 @@
 /* ========================================================
-   InterviewScreen.css - チャット型インタビュー画面のレイアウト
-   PC基本設計・レスポンシブ対応
+   InterviewScreen.css - チャット型インタビュー画面
+   森のひだまり — 温かく包み込むような対話空間
    ======================================================== */
 
 .interview-screen {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: linear-gradient(180deg,
-            var(--color-neutral-0) 0%,
-            var(--color-neutral-50) 100%);
+    background:
+        radial-gradient(ellipse at 10% 0%, rgba(74, 154, 120, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 100%, rgba(139, 109, 184, 0.03) 0%, transparent 50%),
+        linear-gradient(180deg, var(--color-neutral-0) 0%, var(--color-neutral-50) 100%);
 }
 
 /* ----- ヘッダー ----- */
@@ -18,9 +19,10 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--space-3) var(--space-8);
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--color-neutral-200);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(221, 217, 211, 0.6);
     height: var(--header-height);
     flex-shrink: 0;
     z-index: 10;
@@ -33,6 +35,7 @@
 }
 
 .interview-title {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary-700);
@@ -57,11 +60,13 @@
     color: var(--color-neutral-600);
     background: var(--color-neutral-100);
     transition: all var(--transition-fast);
+    border: 1px solid transparent;
 }
 
 .header-btn:hover {
     background: var(--color-neutral-200);
     color: var(--color-neutral-800);
+    border-color: var(--color-neutral-300);
 }
 
 .header-btn-pause {
@@ -71,6 +76,7 @@
 
 .header-btn-pause:hover {
     background: var(--color-accent-100);
+    border-color: var(--color-accent-200);
 }
 
 /* ----- プログレスバー ----- */
@@ -79,18 +85,20 @@
     background: var(--color-neutral-200);
     flex-shrink: 0;
     position: relative;
-    border-bottom: 1px solid var(--color-neutral-300, #ddd);
+    border-bottom: 1px solid var(--color-neutral-300);
 }
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--color-primary-400), var(--color-secondary-400));
+    background: linear-gradient(90deg, var(--color-primary-400), var(--color-primary-500), var(--color-secondary-400));
+    background-size: 200% 100%;
     border-radius: 0 var(--radius-full) var(--radius-full) 0;
     transition: width var(--transition-slow);
     display: flex;
     align-items: center;
     justify-content: flex-end;
     min-width: 70px;
+    position: relative;
 }
 
 .progress-label {
@@ -99,7 +107,7 @@
     font-weight: var(--font-weight-bold);
     padding-right: var(--space-3);
     white-space: nowrap;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* ----- チャットエリア（メイン） ----- */
@@ -121,7 +129,7 @@
 /* タイピングインジケーター */
 .typing-indicator {
     display: flex;
-    gap: 4px;
+    gap: 5px;
     padding: var(--space-4);
     align-self: flex-start;
 }
@@ -129,26 +137,38 @@
 .typing-indicator span {
     width: 8px;
     height: 8px;
-    background: var(--color-neutral-400);
+    background: var(--color-primary-300);
     border-radius: var(--radius-full);
-    animation: pulse 1.2s ease-in-out infinite;
+    animation: typingBounce 1.4s ease-in-out infinite;
 }
 
 .typing-indicator span:nth-child(2) {
-    animation-delay: 0.2s;
+    animation-delay: 0.15s;
 }
 
 .typing-indicator span:nth-child(3) {
-    animation-delay: 0.4s;
+    animation-delay: 0.30s;
+}
+
+@keyframes typingBounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.35;
+    }
+    30% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
 }
 
 /* ----- アクションエリア（下部固定） ----- */
 .action-area {
     flex-shrink: 0;
     padding: var(--space-4) var(--space-4) var(--space-6);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--color-neutral-200);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(221, 217, 211, 0.6);
     display: flex;
     justify-content: center;
 }
@@ -171,10 +191,13 @@
     color: var(--color-neutral-700);
     border-radius: var(--radius-xl);
     font-weight: var(--font-weight-semibold);
+    border: 1px solid var(--color-neutral-200);
+    transition: all var(--transition-normal);
 }
 
 .btn-secondary:hover {
     background: var(--color-neutral-200);
+    border-color: var(--color-neutral-300);
 }
 
 /* 再開コード入力 */
@@ -207,12 +230,14 @@
     border: 2px solid var(--color-neutral-300);
     border-radius: var(--radius-lg);
     outline: none;
-    transition: border-color var(--transition-fast);
+    transition: all var(--transition-fast);
+    background: var(--color-neutral-50);
 }
 
 .resume-code-input:focus {
     border-color: var(--color-primary-400);
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+    box-shadow: 0 0 0 3px rgba(74, 154, 120, 0.12);
+    background: var(--color-neutral-0);
 }
 
 /* 選択肢エリア */
@@ -237,12 +262,14 @@
     font-family: var(--font-family-base);
     color: var(--color-neutral-700);
     outline: none;
-    transition: border-color var(--transition-fast);
+    transition: all var(--transition-fast);
+    background: var(--color-neutral-50);
 }
 
 .supplement-input:focus {
     border-color: var(--color-primary-400);
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    box-shadow: 0 0 0 3px rgba(74, 154, 120, 0.10);
+    background: var(--color-neutral-0);
 }
 
 .supplement-input::placeholder {
@@ -253,7 +280,7 @@
 .btn-skip-with-text {
     flex-shrink: 0;
     padding: var(--space-2) var(--space-4);
-    background: var(--color-secondary-500);
+    background: var(--color-primary-500);
     color: var(--color-neutral-0);
     border: none;
     border-radius: var(--radius-lg);
@@ -266,9 +293,9 @@
 }
 
 .btn-skip-with-text:hover {
-    background: var(--color-secondary-600);
+    background: var(--color-primary-600);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 178, 95, 0.3);
+    box-shadow: var(--shadow-glow-primary);
 }
 
 /* 前の質問に戻るボタン */
@@ -277,17 +304,18 @@
     margin: var(--space-3) auto 0;
     padding: var(--space-2) var(--space-4);
     background: none;
-    border: 1px solid var(--color-neutral-300, #ccc);
-    border-radius: var(--radius-md, 8px);
-    color: var(--color-neutral-600, #666);
-    font-size: var(--font-size-sm, 0.85rem);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    color: var(--color-neutral-500);
+    font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    transition: all var(--transition-fast);
 }
 
 .btn-go-back:hover {
-    background: var(--color-neutral-100, #f5f5f5);
-    color: var(--color-neutral-800, #333);
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-700);
+    border-color: var(--color-neutral-400);
 }
 
 @keyframes fadeIn {
@@ -295,7 +323,6 @@
         opacity: 0;
         transform: translateX(8px);
     }
-
     to {
         opacity: 1;
         transform: translateX(0);

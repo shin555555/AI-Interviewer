@@ -1,15 +1,30 @@
 /* ========================================================
-   App.css - メインレイアウトとランディング画面のスタイル
+   App.css - メインレイアウトとランディング画面
+   「森のひだまり」— 温かな森の光に包まれるウェルカム体験
    ======================================================== */
 
 .app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg,
-      var(--color-primary-50) 0%,
-      var(--color-neutral-0) 40%,
-      var(--color-secondary-50) 100%);
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(74, 154, 120, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(139, 109, 184, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, rgba(232, 130, 85, 0.03) 0%, transparent 50%),
+    var(--color-neutral-50);
+  position: relative;
+}
+
+/* Subtle organic texture overlay */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(74, 154, 120, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(139, 109, 184, 0.03) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ----- Header ----- */
@@ -18,17 +33,21 @@
   align-items: baseline;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-8);
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(221, 217, 211, 0.6);
   height: var(--header-height);
+  position: relative;
+  z-index: 10;
 }
 
 .app-title {
+  font-family: var(--font-family-display);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary-700);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .app-subtitle {
@@ -44,31 +63,69 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-8);
+  position: relative;
+  z-index: 1;
 }
 
 /* ----- Welcome Card ----- */
 .welcome-card {
   text-align: center;
-  background: var(--color-neutral-0);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-2xl);
   padding: var(--space-16) var(--space-12);
-  box-shadow: var(--shadow-xl);
-  max-width: 480px;
+  box-shadow:
+    var(--shadow-xl),
+    0 0 0 1px rgba(74, 154, 120, 0.04);
+  max-width: 500px;
   width: 100%;
-  animation: fadeInUp var(--transition-slow) both;
+  animation: welcomeCardAppear 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative top gradient accent */
+.welcome-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--color-primary-400),
+    var(--color-secondary-400),
+    var(--color-accent-400));
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+}
+
+@keyframes welcomeCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .welcome-icon {
   font-size: 3.5rem;
   margin-bottom: var(--space-6);
-  animation: pulse 2s ease-in-out infinite;
+  animation: gentleFloat 3s ease-in-out infinite;
+  display: inline-block;
 }
 
 .welcome-heading {
+  font-family: var(--font-family-display);
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-neutral-900);
   margin-bottom: var(--space-4);
+  letter-spacing: 0.02em;
 }
 
 .welcome-text {
@@ -85,28 +142,31 @@
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-4) var(--space-8);
+  font-family: var(--font-family-display);
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
   border-radius: var(--radius-xl);
   transition: all var(--transition-normal);
   letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
   color: var(--color-neutral-0);
-  box-shadow: 0 4px 14px rgba(33, 150, 243, 0.35);
+  box-shadow: var(--shadow-glow-primary);
 }
 
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-500) 100%);
-  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.45);
+  box-shadow: 0 6px 24px rgba(74, 154, 120, 0.30);
   transform: translateY(-2px);
 }
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.30);
+  box-shadow: 0 2px 8px rgba(74, 154, 120, 0.20);
 }
 
 .welcome-buttons {
@@ -118,20 +178,20 @@
 }
 
 .btn-deepdive {
-  background: linear-gradient(135deg, #7B9ACC 0%, #6B8ABB 100%);
+  background: linear-gradient(135deg, var(--color-secondary-400) 0%, var(--color-secondary-500) 100%);
   color: var(--color-neutral-0);
-  box-shadow: 0 4px 14px rgba(107, 138, 187, 0.35);
+  box-shadow: var(--shadow-glow-secondary);
 }
 
 .btn-deepdive:hover {
-  background: linear-gradient(135deg, #8BAAD9 0%, #7B9ACC 100%);
-  box-shadow: 0 6px 20px rgba(107, 138, 187, 0.45);
+  background: linear-gradient(135deg, var(--color-secondary-300) 0%, var(--color-secondary-400) 100%);
+  box-shadow: 0 6px 24px rgba(139, 109, 184, 0.30);
   transform: translateY(-2px);
 }
 
 .btn-deepdive:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(107, 138, 187, 0.30);
+  box-shadow: 0 2px 8px rgba(139, 109, 184, 0.20);
 }
 
 .btn-admin {
@@ -141,10 +201,12 @@
   border: 1px solid var(--color-neutral-300);
   padding: var(--space-3) var(--space-6);
   font-size: var(--font-size-sm);
+  font-family: var(--font-family-base);
+  border-radius: var(--radius-lg);
 }
 
 .btn-admin:hover {
-  background: var(--color-neutral-50);
+  background: var(--color-neutral-100);
   color: var(--color-neutral-700);
   border-color: var(--color-neutral-400);
 }
@@ -172,12 +234,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(37, 35, 32, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -188,10 +251,12 @@
   width: 90%;
   max-width: 400px;
   box-shadow: var(--shadow-xl);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modalSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid var(--color-neutral-200);
 }
 
 .admin-login-modal h3 {
+  font-family: var(--font-family-display);
   font-size: var(--font-size-xl);
   color: var(--color-neutral-800);
   margin-bottom: var(--space-2);
@@ -203,6 +268,7 @@
   color: var(--color-neutral-500);
   text-align: center;
   margin-bottom: var(--space-6);
+  line-height: var(--line-height-normal);
 }
 
 .admin-password-input {
@@ -215,11 +281,13 @@
   transition: all var(--transition-fast);
   text-align: center;
   letter-spacing: 0.2em;
+  background: var(--color-neutral-50);
 }
 
 .admin-password-input:focus {
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 4px rgba(74, 154, 120, 0.10);
+  background: var(--color-neutral-0);
 }
 
 .admin-password-input.is-error {
@@ -264,53 +332,34 @@
 }
 
 .admin-login-submit {
-  background: var(--color-primary-600);
+  background: var(--color-primary-500);
   color: var(--color-neutral-0);
   border: none;
 }
 
 .admin-login-submit:hover {
-  background: var(--color-primary-700);
+  background: var(--color-primary-600);
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@keyframes slideUp {
+@keyframes modalSlideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(24px) scale(0.96);
   }
-
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-5px);
-  }
-
-  50% {
-    transform: translateX(5px);
-  }
-
-  75% {
-    transform: translateX(-5px);
-  }
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
 }

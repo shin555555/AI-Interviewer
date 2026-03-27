@@ -1,5 +1,6 @@
 /* ========================================================
-   AdminDashboard - 管理者ダッシュボード画面のスタイル
+   AdminDashboard - 管理者ダッシュボード
+   森のひだまり — プロフェッショナルな管理画面
    ======================================================== */
 
 /* --- 全体レイアウト --- */
@@ -21,6 +22,7 @@
 }
 
 .admin-sidebar-title {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
     padding: 0 var(--space-5);
@@ -65,7 +67,7 @@
 .admin-nav-item.is-active {
     background: rgba(255, 255, 255, 0.12);
     color: var(--color-neutral-0);
-    border-left: 3px solid var(--color-secondary-400);
+    border-left: 3px solid var(--color-accent-400);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -116,6 +118,7 @@
 }
 
 .admin-main-header h1 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-neutral-800);
@@ -144,6 +147,7 @@
     gap: var(--space-4);
     transition: box-shadow var(--transition-normal), transform var(--transition-normal);
     animation: fadeInUp 0.4s both;
+    border: 1px solid var(--color-neutral-200);
 }
 
 .admin-stat-card:nth-child(2) {
@@ -175,7 +179,7 @@
 }
 
 .admin-stat-icon.is-success {
-    background: var(--color-secondary-50);
+    background: var(--color-primary-50);
 }
 
 .admin-stat-icon.is-warning {
@@ -183,7 +187,7 @@
 }
 
 .admin-stat-icon.is-info {
-    background: rgba(156, 39, 176, 0.08);
+    background: var(--color-secondary-50);
 }
 
 .admin-stat-value {
@@ -212,6 +216,12 @@
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
     transition: box-shadow var(--transition-normal);
+    animation: fadeInUp 0.5s both;
+    border: 1px solid var(--color-neutral-200);
+}
+
+.admin-chart-card:nth-child(2) {
+    animation-delay: 0.1s;
 }
 
 .admin-chart-card:hover {
@@ -219,17 +229,10 @@
     transform: translateY(-2px);
 }
 
-.admin-chart-card {
-    animation: fadeInUp 0.5s both;
-}
-
-.admin-chart-card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
 .admin-chart-card h2 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     color: var(--color-neutral-800);
     margin-bottom: var(--space-5);
     display: flex;
@@ -249,11 +252,13 @@
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
     margin-bottom: var(--space-6);
+    border: 1px solid var(--color-neutral-200);
 }
 
 .admin-issues-card h2 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     color: var(--color-neutral-800);
     margin-bottom: var(--space-5);
     display: flex;
@@ -317,11 +322,13 @@
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
     margin-bottom: var(--space-6);
+    border: 1px solid var(--color-neutral-200);
 }
 
 .admin-users-card h2 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     color: var(--color-neutral-800);
     margin-bottom: var(--space-5);
     display: flex;
@@ -380,8 +387,8 @@
 }
 
 .tag-strength {
-    background: var(--color-secondary-50);
-    color: var(--color-secondary-700);
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
 }
 
 .tag-weakness {
@@ -395,8 +402,8 @@
 }
 
 .tag-confidence-mid {
-    background: rgba(156, 39, 176, 0.08);
-    color: #7B1FA2;
+    background: var(--color-secondary-50);
+    color: var(--color-secondary-700);
 }
 
 .tag-confidence-low {
@@ -464,6 +471,7 @@
 }
 
 .admin-user-header h2 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-neutral-800);
@@ -488,11 +496,13 @@
     border-radius: var(--radius-xl);
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-neutral-200);
 }
 
 .admin-detail-card h3 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     color: var(--color-neutral-800);
     margin-bottom: var(--space-5);
     display: flex;
@@ -530,11 +540,13 @@
     border-radius: var(--radius-xl);
     padding: var(--space-6);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-neutral-200);
 }
 
 .admin-free-texts h3 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     color: var(--color-neutral-800);
     margin-bottom: var(--space-4);
     display: flex;
@@ -572,7 +584,7 @@
 .admin-bulk-pdf-btn:hover:not(:disabled) {
     background: var(--color-primary-700);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    box-shadow: var(--shadow-glow-primary);
 }
 
 .admin-bulk-pdf-btn:disabled {
@@ -601,13 +613,13 @@
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: all var(--transition-normal);
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.25);
+    box-shadow: 0 2px 8px rgba(74, 154, 120, 0.25);
 }
 
 .admin-detail-pdf-btn:hover:not(:disabled) {
     background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(33, 150, 243, 0.35);
+    box-shadow: 0 4px 16px rgba(74, 154, 120, 0.35);
 }
 
 .admin-detail-pdf-btn:disabled {
@@ -649,15 +661,8 @@
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 /* --- エラー表示 --- */
@@ -686,7 +691,7 @@
 
 .admin-error-detail {
     font-size: var(--font-size-sm) !important;
-    font-weight: var(--font-weight-normal) !important;
+    font-weight: var(--font-weight-regular) !important;
     color: var(--color-neutral-500) !important;
     margin-bottom: var(--space-5) !important;
 }
@@ -709,7 +714,7 @@
 .admin-retry-btn:hover {
     background: var(--color-primary-700);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    box-shadow: var(--shadow-glow-primary);
 }
 
 /* --- レポート詳細エリア --- */
@@ -722,6 +727,7 @@
     align-items: center;
     gap: var(--space-4);
     margin-bottom: var(--space-6);
+    font-family: var(--font-family-display);
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary-700);
@@ -783,7 +789,7 @@
 }
 
 .admin-report-table tbody tr.is-best-match {
-    background: rgba(0, 178, 95, 0.04);
+    background: rgba(74, 154, 120, 0.04);
 }
 
 .report-attr-name {
@@ -805,13 +811,13 @@
 }
 
 .report-score-badge.level-high {
-    background: var(--color-secondary-50);
-    color: var(--color-secondary-700);
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
 }
 
 .report-score-badge.level-mid {
-    background: var(--color-primary-50);
-    color: var(--color-primary-700);
+    background: var(--color-secondary-50);
+    color: var(--color-secondary-700);
 }
 
 .report-score-badge.level-low {
@@ -837,7 +843,7 @@
 }
 
 .report-rank.rank-best {
-    color: var(--color-secondary-600);
+    color: var(--color-primary-600);
 }
 
 .report-job-name {
@@ -885,7 +891,7 @@
 }
 
 .admin-action-plan-subtle summary::before {
-    content: '▸';
+    content: '\25B8';
     transition: transform var(--transition-fast);
 }
 
@@ -962,7 +968,6 @@
         opacity: 0;
         transform: translateY(16px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);

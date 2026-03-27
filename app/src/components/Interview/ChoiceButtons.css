@@ -1,3 +1,8 @@
+/* ========================================================
+   ChoiceButtons.css - 選択肢ボタン
+   温かみのある色分けと有機的な形状
+   ======================================================== */
+
 .choice-buttons {
     display: flex;
     flex-direction: column;
@@ -26,72 +31,73 @@
     cursor: pointer;
     text-align: center;
     min-height: 56px;
+    position: relative;
 }
 
 .choice-btn:hover {
     border-color: var(--color-primary-300);
     background: var(--color-primary-50);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
-/* 選択肢ごとの左ボーダーカラー */
+/* 選択肢ごとの左ボーダーカラー (warm organic palette) */
 .choice-a {
-    border-left: 4px solid #e53935;
+    border-left: 4px solid #D45454;
 }
 
 .choice-b {
-    border-left: 4px solid #ffa726;
+    border-left: 4px solid var(--color-accent-500);
 }
 
 .choice-c {
-    border-left: 4px solid #2196f3;
+    border-left: 4px solid var(--color-primary-500);
 }
 
 .choice-d {
-    border-left: 4px solid #43a047;
+    border-left: 4px solid var(--color-secondary-500);
 }
 
 .choice-e {
-    border-left: 4px solid #7e57c2;
+    border-left: 4px solid #5A8FB8;
 }
 
 /* 選択済み状態 */
 .choice-selected {
     border-color: var(--color-primary-500) !important;
     background: var(--color-primary-50);
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+    box-shadow: 0 0 0 3px rgba(74, 154, 120, 0.15);
     transform: translateY(-2px);
 }
 
 .choice-selected.choice-a {
-    background: #fce4ec;
-    border-color: #e53935 !important;
-    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2);
+    background: #FDECEC;
+    border-color: #D45454 !important;
+    box-shadow: 0 0 0 3px rgba(212, 84, 84, 0.15);
 }
 
 .choice-selected.choice-b {
-    background: #fff3e0;
-    border-color: #ffa726 !important;
-    box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.2);
+    background: var(--color-accent-50);
+    border-color: var(--color-accent-500) !important;
+    box-shadow: 0 0 0 3px rgba(232, 130, 85, 0.15);
 }
 
 .choice-selected.choice-c {
-    background: #e3f2fd;
-    border-color: #2196f3 !important;
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+    background: var(--color-primary-50);
+    border-color: var(--color-primary-500) !important;
+    box-shadow: 0 0 0 3px rgba(74, 154, 120, 0.15);
 }
 
 .choice-selected.choice-d {
-    background: #e8f5e9;
-    border-color: #43a047 !important;
-    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.2);
+    background: var(--color-secondary-50);
+    border-color: var(--color-secondary-500) !important;
+    box-shadow: 0 0 0 3px rgba(139, 109, 184, 0.15);
 }
 
 .choice-selected.choice-e {
-    background: #ede7f6;
-    border-color: #7e57c2 !important;
-    box-shadow: 0 0 0 3px rgba(126, 87, 194, 0.2);
+    background: #EDF4F9;
+    border-color: #5A8FB8 !important;
+    box-shadow: 0 0 0 3px rgba(90, 143, 184, 0.15);
 }
 
 /* 確定ボタン */
@@ -100,15 +106,16 @@
     border-radius: var(--radius-xl);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    background: linear-gradient(135deg, var(--color-secondary-500) 0%, var(--color-secondary-600) 100%);
+    font-family: var(--font-family-display);
+    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
     color: var(--color-neutral-0);
-    box-shadow: 0 4px 14px rgba(0, 178, 95, 0.35);
+    box-shadow: var(--shadow-glow-primary);
     transition: all var(--transition-normal);
 }
 
 .btn-confirm:hover {
-    background: linear-gradient(135deg, var(--color-secondary-400) 0%, var(--color-secondary-500) 100%);
-    box-shadow: 0 6px 20px rgba(0, 178, 95, 0.45);
+    background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-500) 100%);
+    box-shadow: 0 6px 24px rgba(74, 154, 120, 0.30);
     transform: translateY(-2px);
 }
 

@@ -1,67 +1,69 @@
 /* ========================================================
    AI ワーク・プロファイル - Design System
    ========================================================
-   「やさしいプロフェッショナル」を体現するデザイントークン群。
-   落ち着いた青緑系の配色で、信頼感とやさしさを両立する。
+   「森のひだまり」— Warm sage greens, soft corals, and
+   organic shapes inspired by 森林浴 (forest bathing).
+   Professional yet deeply nurturing — designed for
+   employment support facilities.
    ======================================================== */
 
 /* ----- CSS Custom Properties (Design Tokens) ----- */
 :root {
   /* === Color Palette === */
-  /* Primary: 落ち着いた青（信頼・プロフェッショナル） */
-  --color-primary-50:  #e8f4fd;
-  --color-primary-100: #b8dff8;
-  --color-primary-200: #88caf3;
-  --color-primary-300: #58b5ee;
-  --color-primary-400: #3aa5e9;
-  --color-primary-500: #2196F3;
-  --color-primary-600: #1b7ed0;
-  --color-primary-700: #1565ad;
-  --color-primary-800: #104d8a;
-  --color-primary-900: #0a3567;
+  /* Primary: 温かみのあるセージグリーン（安心・自然・やさしさ） */
+  --color-primary-50:  #EEF6F2;
+  --color-primary-100: #D1E8DC;
+  --color-primary-200: #B3D9C5;
+  --color-primary-300: #8AC4A8;
+  --color-primary-400: #65B08E;
+  --color-primary-500: #4A9A78;
+  --color-primary-600: #3D8366;
+  --color-primary-700: #316C54;
+  --color-primary-800: #265542;
+  --color-primary-900: #1A3E30;
 
-  /* Secondary: 穏やかな緑（やさしさ・安心感） */
-  --color-secondary-50:  #e6f7ef;
-  --color-secondary-100: #b3e8cf;
-  --color-secondary-200: #80d9af;
-  --color-secondary-300: #4dca8f;
-  --color-secondary-400: #26be77;
-  --color-secondary-500: #00b25f;
-  --color-secondary-600: #009a52;
-  --color-secondary-700: #008245;
-  --color-secondary-800: #006a38;
-  --color-secondary-900: #00522b;
+  /* Secondary: ソフトラベンダー（落ち着き・内省・知性） */
+  --color-secondary-50:  #F3F0F7;
+  --color-secondary-100: #E1D9ED;
+  --color-secondary-200: #CDBFE2;
+  --color-secondary-300: #B5A0D3;
+  --color-secondary-400: #A287C8;
+  --color-secondary-500: #8B6DB8;
+  --color-secondary-600: #755AA0;
+  --color-secondary-700: #5F4886;
+  --color-secondary-800: #49376C;
+  --color-secondary-900: #342652;
 
-  /* Accent: 暖かいオレンジ（ポジティブ・アクション促進） */
-  --color-accent-50:  #fff3e0;
-  --color-accent-100: #ffe0b2;
-  --color-accent-200: #ffcc80;
-  --color-accent-300: #ffb74d;
-  --color-accent-400: #ffa726;
-  --color-accent-500: #FF9800;
-  --color-accent-600: #fb8c00;
-  --color-accent-700: #f57c00;
-  --color-accent-800: #ef6c00;
-  --color-accent-900: #e65100;
+  /* Accent: テラコッタコーラル（ポジティブ・温かさ・行動） */
+  --color-accent-50:  #FEF2ED;
+  --color-accent-100: #FCDFD2;
+  --color-accent-200: #F9CAB3;
+  --color-accent-300: #F5B08E;
+  --color-accent-400: #F09A6F;
+  --color-accent-500: #E88255;
+  --color-accent-600: #D06C40;
+  --color-accent-700: #B25730;
+  --color-accent-800: #914423;
+  --color-accent-900: #703318;
 
-  /* Neutral: グレーパレット（テキスト・背景・ボーダー） */
+  /* Neutral: ウォームグレー（テキスト・背景・ボーダー） */
   --color-neutral-0:   #FFFFFF;
-  --color-neutral-50:  #F8FAFB;
-  --color-neutral-100: #F1F3F5;
-  --color-neutral-200: #E9ECEF;
-  --color-neutral-300: #DEE2E6;
-  --color-neutral-400: #CED4DA;
-  --color-neutral-500: #ADB5BD;
-  --color-neutral-600: #868E96;
-  --color-neutral-700: #495057;
-  --color-neutral-800: #343A40;
-  --color-neutral-900: #212529;
+  --color-neutral-50:  #FAFAF8;
+  --color-neutral-100: #F4F3F0;
+  --color-neutral-200: #ECEAE6;
+  --color-neutral-300: #DDD9D3;
+  --color-neutral-400: #C5C0B8;
+  --color-neutral-500: #A9A39B;
+  --color-neutral-600: #85807A;
+  --color-neutral-700: #5E5A55;
+  --color-neutral-800: #3D3A36;
+  --color-neutral-900: #252320;
 
   /* Semantic Colors */
-  --color-success: #00b25f;
-  --color-warning: #FF9800;
-  --color-error:   #E53935;
-  --color-info:    #2196F3;
+  --color-success: #4A9A78;
+  --color-warning: #E88255;
+  --color-error:   #D45454;
+  --color-info:    #5A8FB8;
 
   /* Chat Bubble Colors */
   --color-bubble-system: var(--color-neutral-100);
@@ -69,7 +71,10 @@
   --color-bubble-user-text: var(--color-neutral-0);
 
   /* === Typography === */
-  --font-family-base: 'Noto Sans JP', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-display: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+  --font-family-base: 'Noto Sans JP', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'DM Sans', 'Noto Sans JP', monospace;
+
   --font-size-xs:   0.75rem;   /* 12px */
   --font-size-sm:   0.875rem;  /* 14px */
   --font-size-base: 1rem;      /* 16px */
@@ -102,23 +107,27 @@
   --space-16: 4rem;     /* 64px */
 
   /* === Border Radius === */
-  --radius-sm:   0.375rem;  /* 6px */
-  --radius-md:   0.5rem;    /* 8px */
-  --radius-lg:   0.75rem;   /* 12px */
-  --radius-xl:   1rem;      /* 16px */
-  --radius-2xl:  1.5rem;    /* 24px */
+  --radius-sm:   0.5rem;    /* 8px — softer */
+  --radius-md:   0.75rem;   /* 12px */
+  --radius-lg:   1rem;      /* 16px */
+  --radius-xl:   1.25rem;   /* 20px */
+  --radius-2xl:  1.75rem;   /* 28px */
   --radius-full: 9999px;
 
-  /* === Shadows === */
-  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
-  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  /* === Shadows (warm-tinted) === */
+  --shadow-sm:  0 1px 3px rgba(61, 58, 54, 0.06), 0 1px 2px rgba(61, 58, 54, 0.04);
+  --shadow-md:  0 4px 8px -1px rgba(61, 58, 54, 0.07), 0 2px 4px -2px rgba(61, 58, 54, 0.05);
+  --shadow-lg:  0 12px 20px -4px rgba(61, 58, 54, 0.08), 0 4px 8px -4px rgba(61, 58, 54, 0.05);
+  --shadow-xl:  0 24px 40px -8px rgba(61, 58, 54, 0.10), 0 8px 16px -6px rgba(61, 58, 54, 0.06);
+  --shadow-glow-primary: 0 4px 16px rgba(74, 154, 120, 0.20);
+  --shadow-glow-accent:  0 4px 16px rgba(232, 130, 85, 0.20);
+  --shadow-glow-secondary: 0 4px 16px rgba(139, 109, 184, 0.20);
 
   /* === Transitions === */
   --transition-fast:   150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow:   400ms ease;
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* === Layout === */
   --chat-max-width: 800px;
@@ -161,12 +170,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Display font for headings */
+h1, h2, h3 {
+  font-family: var(--font-family-display);
+}
+
 a {
-  color: var(--color-primary-500);
+  color: var(--color-primary-600);
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 a:hover {
-  color: var(--color-primary-700);
+  color: var(--color-primary-800);
 }
 
 button {
@@ -203,7 +218,7 @@ ul, ol {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -243,6 +258,16 @@ ul, ol {
   50%      { opacity: 0.5; }
 }
 
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp var(--transition-slow) both;
 }
@@ -257,4 +282,25 @@ ul, ol {
 
 .animate-slide-in-left {
   animation: slideInLeft var(--transition-slow) both;
+}
+
+/* ----- Selection color ----- */
+::selection {
+  background: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+/* ----- Scrollbar styling ----- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
 }
